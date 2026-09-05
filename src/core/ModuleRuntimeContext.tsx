@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import type { Membership, ModuleEntitlement, Profile, Property } from '@hotsflow/core-sdk'
 import { core, supabase } from './client'
-import type { Membership, ModuleEntitlement, Profile, Property } from './types'
 
 type RuntimeStatus = 'loading' | 'signed-out' | 'no-property' | 'ready' | 'error'
 
