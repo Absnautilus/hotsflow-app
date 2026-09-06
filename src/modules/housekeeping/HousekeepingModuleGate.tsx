@@ -8,7 +8,17 @@ type MappingState =
   | { status: 'loading'; hotelId: null }
   | { status: 'ready'; hotelId: string }
   | { status: 'unavailable'; hotelId: null }
-  | { status: 'error'; hotelId: null }
+  | { status: 'error'; hotelId: null; message: string }
+
+function errorMessage(cause: unknown): string {
+  if (cause && typeof cause === 'object') {
+    const candidate = cause as { code?: unknown; message?: unknown; details?: unknown; hint?: unknown }
+    return [candidate.code, candidate.message, candidate.details, candidate.hint]
+      .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      .join(' · ')
+  }
+  return cause instanceof Error ? cause.message : String(cause)
+}
 
 export function HousekeepingModuleGate() {
   const runtime = useModuleRuntime()
@@ -34,8 +44,8 @@ export function HousekeepingModuleGate() {
         if (cancelled) return
         setMapping(hotelId ? { status: 'ready', hotelId } : { status: 'unavailable', hotelId: null })
       })
-      .catch(() => {
-        if (!cancelled) setMapping({ status: 'error', hotelId: null })
+      .catch((cause: unknown) => {
+        if (!cancelled) setMapping({ status: 'error', hotelId: null, message: errorMessage(cause) })
       })
 
     return () => {
@@ -52,7 +62,12 @@ export function HousekeepingModuleGate() {
   }
 
   if (mapping.status === 'error') {
-    return <main className="runtime-state">Impossibile caricare Housekeeping.</main>
+    return (
+      <main className="runtime-state">
+        <strong>Impossibile caricare Housekeeping.</strong>
+        <small style={{ maxWidth: 720, textAlign: 'center', overflowWrap: 'anywhere' }}>{mapping.message || 'Errore sconosciuto'}</small>
+      </main>
+    )
   }
 
   return <HousekeepingModule supabase={supabase} hotelId={mapping.hotelId} basePath="/housekeeping" />
