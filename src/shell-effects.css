@@ -7,12 +7,20 @@
   background: var(--bg);
 }
 
+/* The fixed sidebar is global chrome and must sit above the shell content
+   stacking context. Without an explicit z-index, the later .shell-content
+   stacking context can paint over it while still reserving its 236px space. */
+.sidebar {
+  z-index: 30;
+}
+
 .shell-content {
   position: relative;
+  z-index: 0;
   isolation: isolate;
   background:
-    radial-gradient(980px 430px at 14% -8%, rgba(156, 79, 199, 0.16), transparent 62%),
-    radial-gradient(820px 380px at 98% 2%, rgba(42, 95, 204, 0.11), transparent 58%),
+    radial-gradient(980px 430px at 14% -8%, rgba(156, 79, 199, 0.13), transparent 64%),
+    radial-gradient(820px 380px at 98% 2%, rgba(42, 95, 204, 0.09), transparent 60%),
     var(--bg);
 }
 
@@ -23,8 +31,8 @@
   inset: 0 0 0 236px;
   pointer-events: none;
   background:
-    radial-gradient(520px 300px at 72% 78%, rgba(156, 79, 199, 0.055), transparent 70%),
-    radial-gradient(480px 280px at 38% 58%, rgba(42, 95, 204, 0.045), transparent 72%);
+    radial-gradient(560px 340px at 72% 80%, rgba(156, 79, 199, 0.038), transparent 74%),
+    radial-gradient(520px 320px at 38% 60%, rgba(42, 95, 204, 0.032), transparent 76%);
 }
 
 .page-content {
@@ -70,14 +78,18 @@
 }
 
 @media (max-width: 920px) {
+  .sidebar {
+    z-index: auto;
+  }
+
   .shell-content::before {
     inset: 0;
   }
 
   .shell-content {
     background:
-      radial-gradient(540px 300px at 10% 5%, rgba(156, 79, 199, 0.15), transparent 64%),
-      radial-gradient(500px 320px at 100% 18%, rgba(42, 95, 204, 0.09), transparent 64%),
+      radial-gradient(540px 300px at 10% 5%, rgba(156, 79, 199, 0.13), transparent 66%),
+      radial-gradient(500px 320px at 100% 18%, rgba(42, 95, 204, 0.075), transparent 66%),
       var(--bg);
   }
 
