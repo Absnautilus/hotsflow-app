@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hotsflow/core-sdk": "github:Absnautilus/hotsflow#d2d3e38240e7bb3111d3621c7ceba78da26bb34e",
+    "@hotsflow/core-sdk": "github:Absnautilus/hotsflow#7bef582d1520685a1ff9b3eb85b39862bd412811",
     "@hotsflow/housekeeping-module": "github:Absnautilus/Housekeeping#1892c64758b2863a01766233ad994f5d67f7d478",
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^0.468.0",
