@@ -2,13 +2,14 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { ShellLayout } from '../components/ShellLayout'
 import { HomePage } from '../pages/HomePage'
 import { PlaceholderPage } from '../pages/PlaceholderPage'
+import { HousekeepingModuleGate } from '../modules/housekeeping/HousekeepingModuleGate'
 
 export function App() {
   return (
     <Routes>
       <Route element={<ShellLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="housekeeping" element={<PlaceholderPage title="Housekeeping" />} />
+        <Route path="housekeeping/*" element={<HousekeepingModuleGate />} />
         <Route path="turni" element={<PlaceholderPage title="Turni" />} />
         <Route path="transfer" element={<PlaceholderPage title="Transfer" />} />
         <Route path="modules" element={<PlaceholderPage title="Moduli" />} />
