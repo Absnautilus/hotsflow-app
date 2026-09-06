@@ -17,7 +17,8 @@ export function ShellLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const enabledSlugs = new Set(runtime.entitlements.filter((item) => item.enabled).map((item) => item.slug))
   const modules = shellNavigation.filter((item) => item.kind === 'module' && enabledSlugs.has(moduleSlugByPath[item.path]))
-  const platform = shellNavigation.filter((item) => item.kind === 'platform')
+  const home = shellNavigation.find((item) => item.path === '/')
+  const platform = shellNavigation.filter((item) => item.kind === 'platform' && item.path !== '/')
 
   // A "module" route (e.g. /housekeeping/admin/camere) gets its own compact
   // mobile top bar (← ModuleName / ☰) instead of the generic Hotsflow one,
@@ -33,6 +34,11 @@ export function ShellLayout() {
 
   const navSections = (
     <>
+      {home && (
+        <NavLink className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`} to={home.path} end onClick={() => setDrawerOpen(false)}>
+          <home.icon size={18} /><span>{home.label}</span>
+        </NavLink>
+      )}
       <div className="nav-section-label">Moduli</div>
       {modules.map((item) => (
         <NavLink className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`} key={item.path} to={item.path} onClick={() => setDrawerOpen(false)}>
@@ -48,11 +54,16 @@ export function ShellLayout() {
     </>
   )
 
+  const brandMark = (
+    <div className="brand"><span className="mark">H</span><span>Hotsflow</span></div>
+  )
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand">Hotsflow</div>
+        {brandMark}
         <label className="property-switcher">
+          <span className="mk">{(runtime.property?.name ?? '??').slice(0, 2).toUpperCase()}</span>
           <span><strong>{runtime.property?.name}</strong><small>{runtime.profile?.fullName ?? 'Staff'}</small></span>
           {runtime.properties.length > 1 ? (
             <select aria-label="Struttura attiva" value={runtime.property?.id ?? ''} onChange={(event) => runtime.selectProperty(event.target.value)}>
@@ -72,7 +83,7 @@ export function ShellLayout() {
           </header>
         ) : (
           <header className="mobile-header">
-            <div><div className="brand">Hotsflow</div><small>{runtime.property?.name}</small></div>
+            <div>{brandMark}<small>{runtime.property?.name}</small></div>
             <button type="button" aria-label="Apri menu" onClick={() => setDrawerOpen(true)}><Menu size={20} /></button>
           </header>
         )}
@@ -91,10 +102,11 @@ export function ShellLayout() {
         <div className="drawer-scrim" onClick={() => setDrawerOpen(false)}>
           <div className="drawer-panel" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Menu">
             <div className="drawer-header">
-              <div className="brand">Hotsflow</div>
+              {brandMark}
               <button type="button" aria-label="Chiudi menu" onClick={() => setDrawerOpen(false)}><X size={20} /></button>
             </div>
             <label className="property-switcher">
+              <span className="mk">{(runtime.property?.name ?? '??').slice(0, 2).toUpperCase()}</span>
               <span><strong>{runtime.property?.name}</strong><small>{runtime.profile?.fullName ?? 'Staff'}</small></span>
               {runtime.properties.length > 1 ? (
                 <select aria-label="Struttura attiva" value={runtime.property?.id ?? ''} onChange={(event) => runtime.selectProperty(event.target.value)}>
