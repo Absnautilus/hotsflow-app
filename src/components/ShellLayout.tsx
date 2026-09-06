@@ -2,6 +2,7 @@ import { ChevronDown, Menu } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { shellNavigation } from '../app/navigation'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
+import { LoginScreen } from './LoginScreen'
 
 const moduleSlugByPath: Record<string, string> = {
   '/housekeeping': 'guest_requests',
@@ -16,7 +17,7 @@ export function ShellLayout() {
   const platform = shellNavigation.filter((item) => item.kind === 'platform')
 
   if (runtime.status === 'loading') return <main className="runtime-state">Caricamento Hotsflow…</main>
-  if (runtime.status === 'signed-out') return <main className="runtime-state">Accedi per continuare.</main>
+  if (runtime.status === 'signed-out') return <LoginScreen />
   if (runtime.status === 'no-property') return <main className="runtime-state">Nessuna struttura accessibile.</main>
   if (runtime.status === 'error') return <main className="runtime-state"><strong>Impossibile caricare Hotsflow.</strong><button type="button" onClick={() => void runtime.refresh()}>Riprova</button></main>
 
