@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { ArrowLeft, ChevronDown, Menu, X } from 'lucide-react'
+import { ArrowLeft, Menu, X } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { shellNavigation } from '../app/navigation'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 import { LoginScreen } from './LoginScreen'
+import { PropertySwitcher } from './PropertySwitcher'
 
 const moduleSlugByPath: Record<string, string> = {
   '/housekeeping': 'guest_requests',
@@ -58,19 +59,20 @@ export function ShellLayout() {
     <div className="brand"><span className="mark">H</span><span>Hotsflow</span></div>
   )
 
+  const propertySwitcher = (
+    <PropertySwitcher
+      current={runtime.property ? { id: runtime.property.id, name: runtime.property.name } : null}
+      properties={runtime.properties.map((property) => ({ id: property.id, name: property.name }))}
+      staffLabel={runtime.profile?.fullName ?? 'Staff'}
+      onSelect={(propertyId) => runtime.selectProperty(propertyId)}
+    />
+  )
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
         {brandMark}
-        <label className="property-switcher">
-          <span className="mk">{(runtime.property?.name ?? '??').slice(0, 2).toUpperCase()}</span>
-          <span><strong>{runtime.property?.name}</strong><small>{runtime.profile?.fullName ?? 'Staff'}</small></span>
-          {runtime.properties.length > 1 ? (
-            <select aria-label="Struttura attiva" value={runtime.property?.id ?? ''} onChange={(event) => runtime.selectProperty(event.target.value)}>
-              {runtime.properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
-            </select>
-          ) : <ChevronDown size={16} aria-hidden="true" />}
-        </label>
+        {propertySwitcher}
         <nav className="sidebar-nav" aria-label="Navigazione principale">
           {navSections}
         </nav>
@@ -105,15 +107,7 @@ export function ShellLayout() {
               {brandMark}
               <button type="button" aria-label="Chiudi menu" onClick={() => setDrawerOpen(false)}><X size={20} /></button>
             </div>
-            <label className="property-switcher">
-              <span className="mk">{(runtime.property?.name ?? '??').slice(0, 2).toUpperCase()}</span>
-              <span><strong>{runtime.property?.name}</strong><small>{runtime.profile?.fullName ?? 'Staff'}</small></span>
-              {runtime.properties.length > 1 ? (
-                <select aria-label="Struttura attiva" value={runtime.property?.id ?? ''} onChange={(event) => runtime.selectProperty(event.target.value)}>
-                  {runtime.properties.map((property) => <option key={property.id} value={property.id}>{property.name}</option>)}
-                </select>
-              ) : <ChevronDown size={16} aria-hidden="true" />}
-            </label>
+            {propertySwitcher}
             <nav className="sidebar-nav" aria-label="Navigazione principale">
               {navSections}
             </nav>

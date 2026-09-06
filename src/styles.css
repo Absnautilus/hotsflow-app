@@ -141,14 +141,24 @@ a { color: inherit; text-decoration: none; }
 .brand { display: flex; align-items: center; gap: 9px; font-family: var(--f-head); font-weight: 800; font-size: 14.5px; padding: 6px 8px 18px; }
 .brand .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; font-family: var(--f-head); flex-shrink: 0; }
 
-.property-switcher { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border-radius: var(--r-sm); background: var(--navbar-surface); border: 1px solid var(--navbar-border); color: var(--navbar-text); cursor: pointer; margin-bottom: 18px; text-align: left; }
+.property-switcher-root { position: relative; margin-bottom: 18px; }
+.property-switcher { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid var(--navbar-border); border-radius: var(--r-sm); background: var(--navbar-surface); color: var(--navbar-text); cursor: pointer; text-align: left; font: inherit; }
 .property-switcher .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; flex-shrink: 0; color: #fff; }
 .property-switcher span { min-width: 0; display: grid; gap: 1px; flex: 1; }
-.property-switcher strong, .property-switcher small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.property-switcher strong, .property-switcher small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
 .property-switcher strong { font-size: 12.5px; font-weight: 700; }
 .property-switcher small { color: var(--navbar-icon); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
-.property-switcher select { max-width: 28px; border: 0; background: transparent; color: transparent; cursor: pointer; }
-.property-switcher svg { color: var(--navbar-icon); flex-shrink: 0; }
+.property-switcher svg { color: var(--navbar-icon); flex-shrink: 0; transition: transform var(--motion-fast) var(--motion-ease); }
+.property-switcher svg.rotate { transform: rotate(180deg); }
+
+.switch-panel { position: absolute; z-index: var(--z-dropdown, 100); top: calc(100% + 6px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-lg); overflow: hidden; }
+.switch-panel-hd { padding: 10px 13px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 1px solid var(--line); }
+.switch-panel-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 13px; border: 0; background: transparent; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+.switch-panel-row:hover { background: var(--surface-2); }
+.switch-panel-row.current { background: var(--accent-soft); }
+.switch-panel-row .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+.switch-panel-row .n { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.switch-panel-row .check { color: var(--accent); flex-shrink: 0; }
 
 .sidebar-nav { display: grid; gap: 1px; }
 .nav-section-label { margin: 12px 10px 6px; color: var(--navbar-icon); font-size: 10px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; }
