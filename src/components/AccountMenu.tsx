@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Languages, LogOut, UserRound } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../core/client'
 
 export function AccountMenu({ name }: { name: string }) {
@@ -41,12 +42,12 @@ export function AccountMenu({ name }: { name: string }) {
             <span className="account-avatar large">{initials}</span>
             <div><strong>{name}</strong><small>Account Hotsflow</small></div>
           </div>
-          <a className="account-menu-row" href="/settings#account"><UserRound size={16} /><span>Profilo</span></a>
+          <Link className="account-menu-row" to="/settings#account" onClick={() => setOpen(false)}><UserRound size={16} /><span>Profilo</span></Link>
           <div className="account-language-row">
             <span><Languages size={16} /> Lingua</span>
             <div className="language-segment" aria-label="Lingua">
-              <button type="button" className={language === 'it' ? 'active' : ''} onClick={() => selectLanguage('it')}>IT</button>
-              <button type="button" className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>EN</button>
+              <button type="button" aria-pressed={language === 'it'} className={language === 'it' ? 'active' : ''} onClick={() => selectLanguage('it')}>IT</button>
+              <button type="button" aria-pressed={language === 'en'} className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>EN</button>
             </div>
           </div>
           <button className="account-menu-row danger" type="button" onClick={() => void supabase.auth.signOut()}><LogOut size={16} /><span>Esci</span></button>
