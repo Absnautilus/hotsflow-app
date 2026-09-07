@@ -29,7 +29,7 @@ export function LoginScreen() {
   return (
     <main className="login-screen">
       <section className="login-card" aria-labelledby="login-title">
-        <div className="login-brand">Hotsflow</div>
+        <div className="login-brand"><span className="mark">H</span><span>Hotsflow</span></div>
         <div className="login-copy">
           <p className="eyebrow">Workspace hotel</p>
           <h1 id="login-title">Accedi</h1>
