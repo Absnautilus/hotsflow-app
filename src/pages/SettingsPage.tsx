@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Bell, Building2, ChevronRight, Globe2, LockKeyhole, Puzzle, UserRound } from 'lucide-react'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 
@@ -45,7 +46,7 @@ export function SettingsPage() {
   )
 }
 
-function SettingRow({ title, detail, icon, muted = false }: { title: string; detail: string; icon?: React.ReactNode; muted?: boolean }) {
+function SettingRow({ title, detail, icon, muted = false }: { title: string; detail: string; icon?: ReactNode; muted?: boolean }) {
   return (
     <button className={`settings-row${muted ? ' muted' : ''}`} type="button" disabled={muted}>
       <span className="settings-row-main">{icon ? <span className="settings-row-icon">{icon}</span> : null}<span><strong>{title}</strong><small>{detail}</small></span></span>
