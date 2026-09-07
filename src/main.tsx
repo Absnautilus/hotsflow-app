@@ -5,10 +5,8 @@ import { App } from './app/App'
 import { ModuleRuntimeProvider } from './core/ModuleRuntimeContext'
 import './styles.css'
 import './shell-effects.css'
+import './shell-completion.css'
 
-// The approved v2 shell is light-only for now. Keeping the explicit theme
-// prevents the documented future dark tokens from becoming active via OS
-// preference before dark mode is intentionally implemented and reviewed.
 document.documentElement.setAttribute('data-theme', 'light')
 
 const root = document.getElementById('root')
