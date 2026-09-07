@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 
 export interface SwitchableProperty {
@@ -44,7 +45,7 @@ export function PropertySwitcher({
     requestAnimationFrame(() => triggerRef.current?.focus())
   }
 
-  function handleOptionKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+  function handleOptionKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (event.key === 'Escape' || event.key === 'Tab') {
       if (event.key === 'Escape') event.preventDefault()
       closeAndRestoreFocus()
