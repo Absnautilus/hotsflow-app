@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Menu, X } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { shellNavigation } from '../app/navigation'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 import { LoginScreen } from './LoginScreen'
 import { PropertySwitcher } from './PropertySwitcher'
+import { AccountMenu } from './AccountMenu'
 
 const moduleSlugByPath: Record<string, string> = {
   '/housekeeping': 'guest_requests',
@@ -16,22 +17,35 @@ export function ShellLayout() {
   const runtime = useModuleRuntime()
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const drawerRef = useRef<HTMLDivElement>(null)
   const enabledSlugs = new Set(runtime.entitlements.filter((item) => item.enabled).map((item) => item.slug))
   const modules = shellNavigation.filter((item) => item.kind === 'module' && enabledSlugs.has(moduleSlugByPath[item.path]))
   const home = shellNavigation.find((item) => item.path === '/')
   const platform = shellNavigation.filter((item) => item.kind === 'platform' && item.path !== '/')
-
-  // A "module" route (e.g. /housekeeping/admin/camere) gets its own compact
-  // mobile top bar (← ModuleName / ☰) instead of the generic Hotsflow one,
-  // and the bottom tab bar steps aside — the module's own in-page nav
-  // (its tab-strip) is the only navigation below that point. This is what
-  // keeps mobile down to one navigation layer at a time inside a module.
   const activeModule = modules.find((item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`))
+
+  useEffect(() => {
+    if (!drawerOpen) return
+    const previous = document.activeElement as HTMLElement | null
+    const firstButton = drawerRef.current?.querySelector<HTMLElement>('button, a[href]')
+    firstButton?.focus()
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setDrawerOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      previous?.focus()
+    }
+  }, [drawerOpen])
 
   if (runtime.status === 'loading') return <main className="runtime-state">Caricamento Hotsflow…</main>
   if (runtime.status === 'signed-out') return <LoginScreen />
   if (runtime.status === 'no-property') return <main className="runtime-state">Nessuna struttura accessibile.</main>
   if (runtime.status === 'error') return <main className="runtime-state"><strong>Impossibile caricare Hotsflow.</strong><button type="button" onClick={() => void runtime.refresh()}>Riprova</button></main>
+
+  const displayName = runtime.profile?.fullName ?? 'Staff'
 
   const navSections = (
     <>
@@ -55,15 +69,13 @@ export function ShellLayout() {
     </>
   )
 
-  const brandMark = (
-    <div className="brand"><span className="mark">H</span><span>Hotsflow</span></div>
-  )
+  const brandMark = <div className="brand"><span className="mark">H</span><span>Hotsflow</span></div>
 
   const propertySwitcher = (
     <PropertySwitcher
       current={runtime.property ? { id: runtime.property.id, name: runtime.property.name } : null}
       properties={runtime.properties.map((property) => ({ id: property.id, name: property.name }))}
-      staffLabel={runtime.profile?.fullName ?? 'Staff'}
+      staffLabel={displayName}
       onSelect={(propertyId) => runtime.selectProperty(propertyId)}
     />
   )
@@ -73,10 +85,10 @@ export function ShellLayout() {
       <aside className="sidebar">
         {brandMark}
         {propertySwitcher}
-        <nav className="sidebar-nav" aria-label="Navigazione principale">
-          {navSections}
-        </nav>
+        <nav className="sidebar-nav" aria-label="Navigazione principale">{navSections}</nav>
+        <div className="sidebar-account"><AccountMenu name={displayName} /></div>
       </aside>
+
       <div className="shell-content">
         {activeModule ? (
           <header className="mobile-header mobile-header-module">
@@ -91,6 +103,7 @@ export function ShellLayout() {
         )}
         <main className="page-content"><Outlet /></main>
       </div>
+
       {!activeModule && (
         <nav className="mobile-nav" aria-label="Navigazione mobile">
           {[shellNavigation[0], ...modules.slice(0, 3)].map((item) => (
@@ -100,17 +113,17 @@ export function ShellLayout() {
           ))}
         </nav>
       )}
+
       {drawerOpen && (
         <div className="drawer-scrim" onClick={() => setDrawerOpen(false)}>
-          <div className="drawer-panel" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Menu">
+          <div ref={drawerRef} className="drawer-panel" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Menu">
             <div className="drawer-header">
               {brandMark}
               <button type="button" aria-label="Chiudi menu" onClick={() => setDrawerOpen(false)}><X size={20} /></button>
             </div>
             {propertySwitcher}
-            <nav className="sidebar-nav" aria-label="Navigazione principale">
-              {navSections}
-            </nav>
+            <nav className="sidebar-nav" aria-label="Navigazione principale">{navSections}</nav>
+            <div className="drawer-account"><AccountMenu name={displayName} /></div>
           </div>
         </div>
       )}
