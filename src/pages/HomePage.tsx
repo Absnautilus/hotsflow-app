@@ -1,6 +1,7 @@
 import { ArrowRight, CalendarDays, Hotel, Wrench } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
+import { useHousekeepingAccess } from '../modules/housekeeping/useHousekeepingAccess'
 
 const moduleCatalog = [
   { slug: 'guest_requests', title: 'Housekeeping', description: 'Richieste ospiti e operatività camere.', path: '/housekeeping', icon: Hotel },
@@ -10,8 +11,15 @@ const moduleCatalog = [
 
 export function HomePage() {
   const runtime = useModuleRuntime()
+  // Same compatibility check as the nav (see ShellLayout/useHousekeepingAccess):
+  // an entitled-but-unusable Housekeeping tile is a dead end, not a shortcut.
+  const housekeepingAccess = useHousekeepingAccess()
   const enabled = new Set(runtime.entitlements.filter((item) => item.enabled).map((item) => item.slug))
-  const modules = moduleCatalog.filter((module) => enabled.has(module.slug))
+  const modules = moduleCatalog.filter((module) => {
+    if (!enabled.has(module.slug)) return false
+    if (module.slug === 'guest_requests') return housekeepingAccess.status === 'compatible'
+    return true
+  })
 
   return (
     <div className="page-stack">

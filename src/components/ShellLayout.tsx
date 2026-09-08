@@ -3,6 +3,7 @@ import { ArrowLeft, Menu, X } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { shellNavigation } from '../app/navigation'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
+import { useHousekeepingAccess } from '../modules/housekeeping/useHousekeepingAccess'
 import { LoginScreen } from './LoginScreen'
 import { PropertySwitcher } from './PropertySwitcher'
 import { AccountMenu } from './AccountMenu'
@@ -15,11 +16,25 @@ const moduleSlugByPath: Record<string, string> = {
 
 export function ShellLayout() {
   const runtime = useModuleRuntime()
+  // Called unconditionally, ahead of the runtime.status early returns below,
+  // to satisfy the rules of hooks -- its own loading/error states resolve to
+  // "not compatible yet" and simply keep Housekeeping out of nav until known.
+  const housekeepingAccess = useHousekeepingAccess()
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement>(null)
   const enabledSlugs = new Set(runtime.entitlements.filter((item) => item.enabled).map((item) => item.slug))
-  const modules = shellNavigation.filter((item) => item.kind === 'module' && enabledSlugs.has(moduleSlugByPath[item.path]))
+  // Housekeeping needs an extra check beyond "entitled": a property can be
+  // entitled without being bridged to a legacy hotel, or the current user
+  // can lack an operational profile at the bridged hotel -- both are dead
+  // ends once inside the module, so the nav entry stays hidden until
+  // useHousekeepingAccess confirms an actually-usable profile exists.
+  const modules = shellNavigation.filter((item) => {
+    if (item.kind !== 'module') return false
+    if (!enabledSlugs.has(moduleSlugByPath[item.path])) return false
+    if (item.path === '/housekeeping') return housekeepingAccess.status === 'compatible'
+    return true
+  })
   const home = shellNavigation.find((item) => item.path === '/')
   const platform = shellNavigation.filter((item) => item.kind === 'platform' && item.path !== '/')
   const activeModule = modules.find((item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`))
