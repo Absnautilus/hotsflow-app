@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "node --experimental-strip-types --test src/pages/teamMemberPayload.test.mjs",
+    "test": "node --experimental-strip-types --test src/pages/teamMemberPayload.test.mjs tests/vercelConfig.test.mjs",
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview"
   },
