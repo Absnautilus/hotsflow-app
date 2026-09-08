@@ -25,7 +25,6 @@ export function HomePage() {
           <article className="module-card" key={module.title}>
             <div className="module-card-top">
               <div className="module-icon"><module.icon size={20} /></div>
-              <span className="status-pill">Attivo</span>
             </div>
             <div><h2>{module.title}</h2><p>{module.description}</p></div>
             <Link className="card-link" to={module.path}>Apri <ArrowRight size={16} /></Link>
