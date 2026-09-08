@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Languages, LogOut, UserRound } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../core/client'
 
 export function AccountMenu({ name }: { name: string }) {
@@ -26,6 +27,7 @@ export function AccountMenu({ name }: { name: string }) {
   function selectLanguage(next: string) {
     localStorage.setItem('hotsflow.language', next)
     setLanguage(next)
+    window.dispatchEvent(new CustomEvent('hotsflow:language-change', { detail: next }))
   }
 
   return (
@@ -41,7 +43,7 @@ export function AccountMenu({ name }: { name: string }) {
             <span className="account-avatar large">{initials}</span>
             <div><strong>{name}</strong><small>Account Hotsflow</small></div>
           </div>
-          <a className="account-menu-row" href="/settings#account"><UserRound size={16} /><span>Profilo</span></a>
+          <Link className="account-menu-row" to="/settings#account" onClick={() => setOpen(false)}><UserRound size={16} /><span>Profilo</span></Link>
           <div className="account-language-row">
             <span><Languages size={16} /> Lingua</span>
             <div className="language-segment" aria-label="Lingua">

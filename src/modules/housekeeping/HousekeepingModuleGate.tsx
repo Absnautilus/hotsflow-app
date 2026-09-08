@@ -70,5 +70,16 @@ export function HousekeepingModuleGate() {
     )
   }
 
-  return <HousekeepingModule supabase={supabase} hotelId={mapping.hotelId} basePath="/housekeeping" />
+  return (
+    <HousekeepingModule
+      supabase={supabase}
+      hotelId={mapping.hotelId}
+      basePath="/housekeeping"
+      platformStaffManagement={{
+        href: '/team',
+        label: 'Apri Team',
+        description: 'Gli account e gli accessi si gestiscono una sola volta in Hotsflow Team. Qui trovi il roster operativo di Housekeeping.',
+      }}
+    />
+  )
 }
