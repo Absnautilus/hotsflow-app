@@ -1,6 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Bell, Building2, ChevronRight, Globe2, LockKeyhole, Puzzle, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Modal } from '../components/Modal'
+import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 
 export function SettingsPage() {
@@ -8,6 +10,11 @@ export function SettingsPage() {
   const propertyName = runtime.property?.name ?? 'Struttura'
   const profileName = runtime.profile?.fullName ?? 'Utente Hotsflow'
   const [language, setLanguage] = useState(() => localStorage.getItem('hotsflow.language') === 'en' ? 'en' : 'it')
+  const [propertyOpen, setPropertyOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [canManageProperty, setCanManageProperty] = useState(false)
+
+  useEffect(() => { void runtime.hasPermission('core.property.manage').then(setCanManageProperty).catch(() => setCanManageProperty(false)) }, [runtime.hasPermission])
 
   useEffect(() => {
     function syncLanguage(event: Event) {
@@ -35,7 +42,7 @@ export function SettingsPage() {
       <section className="settings-section">
         <div className="settings-section-title"><Building2 size={18} /><div><h2>Struttura</h2><p>Configurazione condivisa di {propertyName}.</p></div></div>
         <div className="settings-list shell-card">
-          <SettingRow title="Informazioni struttura" detail={propertyName} status="Sola lettura" />
+          <SettingRow title="Informazioni struttura" detail={`${propertyName} · ${runtime.property?.timezone ?? 'Fuso orario non impostato'}`} onClick={canManageProperty ? () => setPropertyOpen(true) : undefined} status={canManageProperty ? undefined : 'Permesso richiesto'} />
           <SettingRow title="Preferenze operative" detail="Fuso orario, formati e impostazioni comuni" status="Non ancora disponibile" muted />
         </div>
       </section>
@@ -43,7 +50,7 @@ export function SettingsPage() {
       <section className="settings-section" id="account">
         <div className="settings-section-title"><UserRound size={18} /><div><h2>Account</h2><p>Preferenze personali valide in tutta la suite.</p></div></div>
         <div className="settings-list shell-card">
-          <SettingRow icon={<UserRound size={17} />} title="Profilo" detail={profileName} status="Sola lettura" />
+          <SettingRow icon={<UserRound size={17} />} title="Profilo" detail={profileName} onClick={() => setProfileOpen(true)} />
           <div className="settings-row settings-row-control">
             <span className="settings-row-main"><span className="settings-row-icon"><Globe2 size={17} /></span><span><strong>Lingua</strong><small>{language === 'en' ? 'English' : 'Italiano'}</small></span></span>
             <div className="language-segment" aria-label="Lingua della suite">
@@ -64,6 +71,9 @@ export function SettingsPage() {
           <SettingRow title="Transfer" detail="Disponibile dopo l'integrazione del modulo" status="Non ancora disponibile" muted />
         </div>
       </section>
+
+      <PropertyModal open={propertyOpen} onClose={() => setPropertyOpen(false)} onSaved={async () => { setPropertyOpen(false); await runtime.refresh() }} />
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} onSaved={async () => { setProfileOpen(false); await runtime.refresh() }} />
     </div>
   )
 }
@@ -75,16 +85,64 @@ type SettingRowProps = {
   muted?: boolean
   status?: string
   to?: string
+  onClick?: () => void
 }
 
-function SettingRow({ title, detail, icon, muted = false, status, to }: SettingRowProps) {
+function SettingRow({ title, detail, icon, muted = false, status, to, onClick }: SettingRowProps) {
   const content = (
     <>
       <span className="settings-row-main">{icon ? <span className="settings-row-icon">{icon}</span> : null}<span><strong>{title}</strong><small>{detail}</small></span></span>
-      {to ? <ChevronRight size={17} /> : <span className="settings-row-status">{status}</span>}
+      {to || onClick ? <ChevronRight size={17} /> : <span className="settings-row-status">{status}</span>}
     </>
   )
 
   if (to) return <Link className="settings-row" to={to}>{content}</Link>
+  if (onClick) return <button className="settings-row" type="button" onClick={onClick}>{content}</button>
   return <div className={`settings-row settings-row-static${muted ? ' muted' : ''}`}>{content}</div>
+}
+
+function PropertyModal({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved: () => Promise<void> }) {
+  const runtime = useModuleRuntime()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => { if (open) { setSaving(false); setError(null) } }, [open])
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!runtime.property) return
+    const form = new FormData(event.currentTarget)
+    setSaving(true); setError(null)
+    try {
+      await core.updateProperty(runtime.property.id, { name: String(form.get('name')), timezone: String(form.get('timezone')) })
+      await onSaved()
+    } catch { setError('Non è stato possibile aggiornare la struttura.'); setSaving(false) }
+  }
+  return <Modal open={open} title="Informazioni struttura" description="Dati condivisi da tutti i moduli Hotsflow." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="property-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button></>}>
+    <form className="modal-form" id="property-form" onSubmit={submit}>
+      <label className="form-field"><span>Nome struttura</span><input name="name" required minLength={2} maxLength={120} defaultValue={runtime.property?.name} /></label>
+      <label className="form-field"><span>Fuso orario</span><select name="timezone" defaultValue={runtime.property?.timezone ?? 'Europe/Rome'}><option value="Europe/Rome">Europa — Roma</option><option value="Europe/London">Europa — Londra</option><option value="Europe/Amsterdam">Europa — Amsterdam</option><option value="America/Mexico_City">America — Città del Messico</option><option value="America/New_York">America — New York</option></select></label>
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+    </form>
+  </Modal>
+}
+
+function ProfileModal({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved: () => Promise<void> }) {
+  const runtime = useModuleRuntime()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => { if (open) { setSaving(false); setError(null) } }, [open])
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const form = new FormData(event.currentTarget); setSaving(true); setError(null)
+    try {
+      await core.updateCurrentProfile({ fullName: String(form.get('name')), avatarUrl: String(form.get('avatar')).trim() || null })
+      await onSaved()
+    } catch { setError('Non è stato possibile aggiornare il profilo.'); setSaving(false) }
+  }
+  return <Modal open={open} title="Profilo" description="Questi dati sono visibili agli altri membri del team." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="profile-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button></>}>
+    <form className="modal-form" id="profile-form" onSubmit={submit}>
+      <label className="form-field"><span>Nome e cognome</span><input name="name" required minLength={2} maxLength={120} defaultValue={runtime.profile?.fullName} autoComplete="name" /></label>
+      <label className="form-field"><span>Email account</span><input value={runtime.session?.user.email ?? ''} readOnly /></label>
+      <label className="form-field"><span>URL immagine profilo (facoltativo)</span><input name="avatar" type="url" defaultValue={runtime.profile?.avatarUrl ?? ''} /></label>
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+    </form>
+  </Modal>
 }
