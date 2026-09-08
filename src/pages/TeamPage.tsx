@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
-import type { CoreRole, JobTitle, MembershipStatus, TeamMember } from '@hotsflow/core-sdk'
+import type { CoreRole, JobTitle, TeamMember } from '@hotsflow/core-sdk'
 import { BriefcaseBusiness, Pencil, Plus, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { Modal } from '../components/Modal'
 import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
+import { buildTeamMemberUpdateInput } from './teamMemberPayload'
 
 const suggestedJobs = [
   'Reception', 'Facchino', 'Cameriere/a ai piani', 'Bar', 'Cameriere colazione',
@@ -129,12 +130,7 @@ function EditMemberModal({ member, roles, jobTitles, currentProfileId, propertyI
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!member) return; const form = new FormData(event.currentTarget); setSaving(true); setError(null)
     try {
-      await core.updateTeamMember({
-        membershipId: member.membership.id, profileId: member.profile.id, propertyId,
-        ...(orgWide ? {} : { roleId: String(form.get('role')), membershipStatus: String(form.get('accessStatus')) as MembershipStatus }),
-        jobTitleId: String(form.get('job')) || null,
-        employmentStatus: String(form.get('employmentStatus')) as 'active' | 'inactive',
-      })
+      await core.updateTeamMember(buildTeamMemberUpdateInput(member, propertyId, currentProfileId, form))
       await onSaved()
     } catch (cause) { setError(readableError(cause)); setSaving(false) }
   }

@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "node --experimental-strip-types --test src/pages/teamMemberPayload.test.mjs",
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hotsflow/core-sdk": "github:Absnautilus/hotsflow#f0ea55239ae9b068a952de8610c07f80918cf2be",
+    "@hotsflow/core-sdk": "github:Absnautilus/hotsflow#77ab60c7ea451669235fbf8a7d86facaa555de50",
     "@hotsflow/housekeeping-module": "github:Absnautilus/Housekeeping#34261bec6679cbef4b87f7f03e07775d845fe829",
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^0.468.0",
