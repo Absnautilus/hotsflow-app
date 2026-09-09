@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@hotsflow/core-sdk": "github:Absnautilus/hotsflow#77ab60c7ea451669235fbf8a7d86facaa555de50",
-    "@hotsflow/housekeeping-module": "github:Absnautilus/Housekeeping#d1e29138f773ae90480da76cd4c4b1ac8d074e87",
+    "@hotsflow/housekeeping-module": "github:Absnautilus/Housekeeping#57039d18f324c123d922b5a24d728ac6aede6336",
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^0.468.0",
     "react": "^19.1.1",
