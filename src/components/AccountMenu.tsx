@@ -47,8 +47,8 @@ export function AccountMenu({ name }: { name: string }) {
           <div className="account-language-row">
             <span><Languages size={16} /> Lingua</span>
             <div className="language-segment" aria-label="Lingua">
-              <button type="button" className={language === 'it' ? 'active' : ''} onClick={() => selectLanguage('it')}>IT</button>
-              <button type="button" className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>EN</button>
+              <button type="button" aria-pressed={language === 'it'} className={language === 'it' ? 'active' : ''} onClick={() => selectLanguage('it')}>IT</button>
+              <button type="button" aria-pressed={language === 'en'} className={language === 'en' ? 'active' : ''} onClick={() => selectLanguage('en')}>EN</button>
             </div>
           </div>
           <button className="account-menu-row danger" type="button" onClick={() => void supabase.auth.signOut()}><LogOut size={16} /><span>Esci</span></button>
