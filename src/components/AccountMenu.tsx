@@ -40,7 +40,7 @@ export function AccountMenu({ name }: { name: string }) {
           <Link className="account-menu-row" to="/settings#account" onClick={() => setOpen(false)}><UserRound size={16} /><span>Profilo</span></Link>
           <div className="account-language-row">
             <span><Languages size={16} /> Lingua</span>
-            <LanguageToggle align="right" />
+            <LanguageToggle />
           </div>
           <button className="account-menu-row danger" type="button" onClick={() => void supabase.auth.signOut()}><LogOut size={16} /><span>Esci</span></button>
         </div>
