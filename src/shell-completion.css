@@ -37,7 +37,8 @@
 .section-heading p { margin-top: 3px; font-size: 12.5px; }
 .status-chip { display: inline-flex; padding: 5px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); font-size: 10.5px; font-weight: 700; }
 .team-table { border-top: 1px solid var(--line); }
-.team-row { display: grid; grid-template-columns: minmax(210px,1.45fr) minmax(135px,1fr) minmax(135px,1fr) 115px 44px; gap: 14px; align-items: center; min-height: 58px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.team-row { display: grid; grid-template-columns: minmax(210px,1.45fr) minmax(135px,1fr) minmax(135px,1fr) 115px 96px; gap: 14px; align-items: center; min-height: 58px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.team-row-actions { display: flex; justify-content: flex-end; gap: 4px; }
 .team-row-head { min-height: 38px; background: var(--surface-2); color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .team-person { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .mini-avatar { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 9px; font-weight: 800; }
@@ -134,7 +135,7 @@ body.modal-open { overflow: hidden; }
   .page-heading.split, .section-heading.split { display: grid; }
   .primary-action, .secondary-action { width: 100%; }
   .team-table { overflow-x: auto; }
-  .team-row { min-width: 720px; }
+  .team-row { min-width: 770px; }
   .job-role-grid { gap: 6px; }
   .account-popover { position: fixed; left: 14px; right: 14px; bottom: 16px; }
   .modal-backdrop { padding: 0; align-items: end; }
