@@ -111,19 +111,13 @@ export function TeamPage() {
               <span role="cell">{roleLabel(member.role.slug, member.role.displayName)}</span>
               <span role="cell" className={member.jobTitle ? '' : 'muted'}>{member.jobTitle?.name ?? 'Da assegnare'}</span>
               <span role="cell" className="team-status-cell">
-                {team.canManage && !isSelf && !orgWide ? (
-                  <>
-                    <Switch
-                      checked={member.membership.status === 'active'}
-                      onChange={() => onToggleAccess(member)}
-                      disabled={togglingId === member.membership.id}
-                      aria-label={`Stato accesso di ${member.profile.fullName}`}
-                    />
-                    {member.employmentStatus === 'inactive' ? <small className="muted">Fuori organico</small> : null}
-                  </>
-                ) : (
-                  <><span className={`status-dot ${member.membership.status !== 'active' || member.employmentStatus !== 'active' ? 'inactive' : ''}`} /> {memberStatus(member)}</>
-                )}
+                <Switch
+                  checked={member.membership.status === 'active'}
+                  onChange={() => onToggleAccess(member)}
+                  disabled={!team.canManage || isSelf || orgWide || togglingId === member.membership.id}
+                  aria-label={`Stato accesso di ${member.profile.fullName}`}
+                />
+                {member.employmentStatus === 'inactive' ? <small className="muted">Fuori organico</small> : null}
               </span>
               <span role="cell" className="team-row-actions">
                 {team.canManage ? (
@@ -263,5 +257,4 @@ function SuggestedJobs({ existing, propertyId, onChanged }: { existing: JobTitle
 function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: ReactNode }) { return <label className="form-field" htmlFor={htmlFor}><span>{label}</span>{children}</label> }
 function initials(name: string) { return name.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() }
 function roleLabel(slug: string, fallback: string) { return ({ organization_admin: 'Admin organizzazione', property_admin: 'Admin struttura', manager: 'Manager', receptionist: 'Operatore' } as Record<string, string>)[slug] ?? fallback }
-function memberStatus(member: TeamMember) { if (member.employmentStatus === 'inactive') return 'Fuori organico'; if (member.membership.status === 'suspended') return 'Accesso sospeso'; return 'Attivo' }
 function readableError(cause: unknown) { const message = cause instanceof Error ? cause.message : ''; if (/already|exists|409/i.test(message)) return 'Esiste già un account con questa email.'; if (/permission|forbidden|42501/i.test(message)) return 'Non hai i permessi necessari per questa operazione.'; return 'Operazione non riuscita. Riprova.' }
