@@ -106,7 +106,7 @@ body.modal-open { overflow: hidden; }
 .lang-toggle { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
 .lang-toggle-option { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 999px; background: transparent; cursor: pointer; transition: background var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease); }
 .lang-toggle-option:hover { background: var(--line); }
-.lang-toggle-option.current { background: var(--surface); box-shadow: var(--shadow-sm), 0 0 0 1.5px var(--accent); }
+.lang-toggle-option.current { background: var(--surface); box-shadow: var(--shadow-sm); }
 
 .select-root { position: relative; }
 .select-trigger { width: 100%; min-height: 44px; padding: 0 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
