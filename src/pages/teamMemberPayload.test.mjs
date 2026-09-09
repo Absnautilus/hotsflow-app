@@ -40,12 +40,12 @@ describe('buildTeamMemberUpdateInput', () => {
     })
   })
 
-  it('includes valid membership fields when editing another direct member', () => {
+  it('includes the role when editing another direct member (access status is toggled separately, not via this form)', () => {
     assert.deepEqual(buildTeamMemberUpdateInput(member, 'property-1', 'admin-profile', values({
-      role: 'role-2', accessStatus: 'suspended', job: '', employmentStatus: 'active',
+      role: 'role-2', job: '', employmentStatus: 'active',
     })), {
       membershipId: 'membership-1', profileId: 'profile-1', propertyId: 'property-1',
-      roleId: 'role-2', membershipStatus: 'suspended', jobTitleId: null, employmentStatus: 'active',
+      roleId: 'role-2', jobTitleId: null, employmentStatus: 'active',
     })
   })
 
