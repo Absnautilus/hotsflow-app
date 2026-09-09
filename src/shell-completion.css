@@ -43,8 +43,6 @@
 .team-person { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .mini-avatar { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 9px; font-weight: 800; }
 .muted { color: var(--muted); }
-.status-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 999px; background: #46a66b; }
-.status-dot.inactive { background: var(--muted); }
 .switch-control { position: relative; width: 40px; height: 23px; flex-shrink: 0; padding: 0; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--line-strong); cursor: pointer; transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease); }
 .switch-control.on { background: var(--accent); border-color: var(--accent); }
 .switch-control:disabled { opacity: .45; cursor: not-allowed; }
