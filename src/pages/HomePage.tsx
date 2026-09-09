@@ -40,7 +40,7 @@ export function HomePage() {
         ))}
       </section>
       <section className="attention-card">
-        <div><p className="eyebrow">Attenzione</p><h2>Nessuna criticità urgente</h2><p>Gli stati operativi cross-modulo verranno collegati nei prossimi step.</p></div>
+        <div><p className="eyebrow">Attenzione</p><h2>Nessuna criticità urgente</h2><p>Qui compariranno avvisi e attività che richiedono attenzione.</p></div>
       </section>
     </div>
   )

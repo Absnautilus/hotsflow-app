@@ -10,14 +10,14 @@
 .account-popover-head div { min-width: 0; display: grid; gap: 1px; }
 .account-popover-head strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; }
 .account-popover-head small { color: var(--muted); font-size: 10px; }
-.account-menu-row, .account-language-row { width: 100%; min-height: 42px; padding: 9px 12px; display: flex; align-items: center; gap: 9px; border: 0; background: transparent; color: var(--ink-2); text-align: left; }
+.account-menu-row, .account-language-row { width: 100%; min-height: 44px; padding: 9px 12px; display: flex; align-items: center; gap: 9px; border: 0; background: transparent; color: var(--ink-2); text-align: left; }
 .account-menu-row { cursor: pointer; }
 .account-menu-row:hover { background: var(--surface-2); }
 .account-menu-row.danger { color: var(--red-ink); border-top: 1px solid var(--line); }
 .account-language-row { justify-content: space-between; }
 .account-language-row > span { display: flex; gap: 8px; align-items: center; }
 .language-segment { display: flex; padding: 2px; background: var(--surface-2); border-radius: 7px; }
-.language-segment button { min-width: 30px; height: 26px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; font-weight: 800; cursor: pointer; }
+.language-segment button { min-width: 44px; height: 44px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; font-weight: 800; cursor: pointer; }
 .language-segment button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
 
 .page-stack { display: grid; gap: 22px; }
@@ -28,7 +28,7 @@
 .page-heading p, .section-heading p { margin: 0; color: var(--muted); }
 .eyebrow { margin: 0; color: var(--accent); font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .shell-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-sm); }
-.primary-action, .secondary-action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 14px; border-radius: var(--r-sm); font-weight: 700; }
+.primary-action, .secondary-action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 14px; border-radius: var(--r-sm); font-weight: 700; }
 .primary-action { border: 0; background: var(--accent); color: var(--accent-ink); }
 .secondary-action { border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2); }
 .primary-action:not(:disabled), .secondary-action:not(:disabled) { cursor: pointer; }
@@ -41,14 +41,14 @@
 .section-heading p { margin-top: 3px; font-size: 12.5px; }
 .status-chip { display: inline-flex; padding: 5px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); font-size: 10.5px; font-weight: 700; }
 .team-table { border-top: 1px solid var(--line); }
-.team-row { display: grid; grid-template-columns: minmax(210px,1.45fr) minmax(135px,1fr) minmax(135px,1fr) 115px 34px; gap: 14px; align-items: center; min-height: 58px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.team-row { display: grid; grid-template-columns: minmax(210px,1.45fr) minmax(135px,1fr) minmax(135px,1fr) 115px 44px; gap: 14px; align-items: center; min-height: 58px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
 .team-row-head { min-height: 38px; background: var(--surface-2); color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
 .team-person { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .mini-avatar { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 9px; font-weight: 800; }
 .muted { color: var(--muted); }
 .status-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 999px; background: #46a66b; }
 .status-dot.inactive { background: var(--muted); }
-.row-action, .icon-button { width: 32px; height: 32px; border: 0; border-radius: 8px; display: grid; place-items: center; background: transparent; color: var(--muted); cursor: pointer; }
+.row-action, .icon-button { width: 44px; height: 44px; border: 0; border-radius: 8px; display: grid; place-items: center; background: transparent; color: var(--muted); cursor: pointer; }
 .row-action:hover, .icon-button:hover { background: var(--surface-2); color: var(--accent); }
 .team-empty { min-height: 130px; display: grid; place-items: center; align-content: center; gap: 8px; color: var(--muted); }
 .team-empty p { margin: 0; }
@@ -75,7 +75,8 @@ button.job-role-chip:hover { border-color: var(--accent); }
 .settings-row:last-child { border-bottom: 0; }
 .settings-row[href], button.settings-row { cursor: pointer; }
 .settings-row[href]:hover, button.settings-row:hover { background: var(--surface-2); }
-.settings-row.muted { opacity: .55; }
+.settings-row.muted { color: var(--ink-2); }
+.settings-row.muted .settings-row-main small, .settings-row.muted .settings-row-status { color: var(--ink-2); }
 .settings-row-static, .settings-row-control { cursor: default; }
 .settings-row-status { flex: 0 0 auto; color: var(--muted); font-size: 10.5px; font-weight: 700; }
 .settings-row-main { display: flex; align-items: center; gap: 10px; min-width: 0; }

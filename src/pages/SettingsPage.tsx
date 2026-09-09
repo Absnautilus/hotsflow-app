@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom'
 import { Modal } from '../components/Modal'
 import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
+import { useHousekeepingAccess } from '../modules/housekeeping/useHousekeepingAccess'
 
 export function SettingsPage() {
   const runtime = useModuleRuntime()
+  const housekeepingAccess = useHousekeepingAccess()
   const propertyName = runtime.property?.name ?? 'Struttura'
   const profileName = runtime.profile?.fullName ?? 'Utente Hotsflow'
   const [language, setLanguage] = useState(() => localStorage.getItem('hotsflow.language') === 'en' ? 'en' : 'it')
@@ -66,7 +68,16 @@ export function SettingsPage() {
       <section className="settings-section">
         <div className="settings-section-title"><Puzzle size={18} /><div><h2>Impostazioni moduli</h2><p>Configurazioni specifiche, senza duplicare le preferenze globali.</p></div></div>
         <div className="settings-list shell-card">
-          <SettingRow title="Housekeeping" detail="Categorie, richieste e configurazione operativa" to="/housekeeping/admin/menu" />
+          {housekeepingAccess.status === 'compatible' ? (
+            <SettingRow title="Housekeeping" detail="Categorie, richieste e configurazione operativa" to="/housekeeping/admin/menu" />
+          ) : (
+            <SettingRow
+              title="Housekeeping"
+              detail="Categorie, richieste e configurazione operativa"
+              status={housekeepingStatus(housekeepingAccess.status)}
+              muted
+            />
+          )}
           <SettingRow title="Turni" detail="Disponibile dopo l'integrazione del modulo" status="Non ancora disponibile" muted />
           <SettingRow title="Transfer" detail="Disponibile dopo l'integrazione del modulo" status="Non ancora disponibile" muted />
         </div>
@@ -76,6 +87,15 @@ export function SettingsPage() {
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} onSaved={async () => { setProfileOpen(false); await runtime.refresh() }} />
     </div>
   )
+}
+
+function housekeepingStatus(status: ReturnType<typeof useHousekeepingAccess>['status']): string {
+  if (status === 'loading') return 'Verifica disponibilità…'
+  if (status === 'not-entitled') return 'Non abilitato'
+  if (status === 'no-mapping') return 'Non collegato'
+  if (status === 'no-profile') return 'Profilo operativo richiesto'
+  if (status === 'error') return 'Disponibilità non verificabile'
+  return ''
 }
 
 type SettingRowProps = {

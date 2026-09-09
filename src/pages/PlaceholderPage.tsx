@@ -6,9 +6,9 @@ export function PlaceholderPage({ title }: PlaceholderPageProps) {
       <section className="page-heading">
         <p className="eyebrow">Hotsflow</p>
         <h1>{title}</h1>
-        <p className="page-subtitle">Questa destinazione è già definita nella shell. L'integrazione funzionale arriva nei PR successivi.</p>
+        <p className="page-subtitle">Questo spazio accoglierà le funzioni del modulo quando saranno disponibili per la struttura.</p>
       </section>
-      <section className="empty-state"><span>Foundation pronta</span></section>
+      <section className="empty-state"><span>Non ancora disponibile</span></section>
     </div>
   )
 }
