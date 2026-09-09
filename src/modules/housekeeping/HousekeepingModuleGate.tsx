@@ -11,32 +11,32 @@ export function HousekeepingModuleGate() {
   const access = useHousekeepingAccess()
 
   if (access.status === 'loading') {
-    return <main className="runtime-state">Caricamento Housekeeping…</main>
+    return <div className="runtime-state" role="status">Caricamento Housekeeping…</div>
   }
 
   if (access.status === 'not-entitled') {
-    return <main className="runtime-state">Housekeeping non è abilitato per questa struttura.</main>
+    return <div className="runtime-state">Housekeeping non è abilitato per questa struttura.</div>
   }
 
   if (access.status === 'no-mapping') {
-    return <main className="runtime-state">Housekeeping non è ancora collegato a questa struttura.</main>
+    return <div className="runtime-state">Housekeeping non è ancora collegato a questa struttura.</div>
   }
 
   if (access.status === 'no-profile') {
     return (
-      <main className="runtime-state">
+      <div className="runtime-state">
         Non hai un profilo operativo Housekeeping per questa struttura.
         <small>Gli accessi operativi si gestiscono da Team.</small>
-      </main>
+      </div>
     )
   }
 
   if (access.status === 'error') {
     return (
-      <main className="runtime-state">
+      <div className="runtime-state" role="alert">
         <strong>Impossibile caricare Housekeeping.</strong>
         <small style={{ maxWidth: 720, textAlign: 'center', overflowWrap: 'anywhere' }}>{access.message || 'Errore sconosciuto'}</small>
-      </main>
+      </div>
     )
   }
 

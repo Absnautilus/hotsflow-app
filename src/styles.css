@@ -111,7 +111,7 @@ a { color: inherit; text-decoration: none; }
 .runtime-state button { padding: 9px 14px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); }
 
 /* buttons */
-.btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: var(--r-sm); padding: 0 15px; height: 36px; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit; transition: filter var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease); }
+.btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: var(--r-sm); padding: 0 15px; min-height: 44px; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit; transition: filter var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease); }
 .btn-primary { background: var(--accent); color: var(--accent-ink); }
 .btn-primary:hover { filter: brightness(1.07); }
 .btn-secondary { background: var(--surface); color: var(--ink-2); border: 1px solid var(--line-strong); }
@@ -205,7 +205,7 @@ h1 { margin-bottom: 2px; font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: 
   .mobile-header { position: sticky; z-index: 20; top: 0; min-height: 58px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; background: var(--navbar-bg); color: var(--navbar-text); }
   .mobile-header .brand { color: var(--navbar-text); }
   .mobile-header small { color: var(--navbar-icon); }
-  .mobile-header button { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--navbar-surface); color: var(--navbar-text); }
+  .mobile-header button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--navbar-surface); color: var(--navbar-text); }
   .page-content { padding: 24px 16px 92px; }
   .module-grid { grid-template-columns: 1fr; }
   .mobile-nav { position: fixed; z-index: 30; inset: auto 0 0 0; min-height: 64px; padding: 8px 8px max(8px, env(safe-area-inset-bottom)); display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface); border-top: 1px solid var(--line); }
@@ -215,6 +215,6 @@ h1 { margin-bottom: 2px; font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: 
   .drawer-panel { position: absolute; inset: 0 auto 0 0; width: min(84vw, 300px); height: 100%; padding: 16px 12px; background: var(--navbar-bg); color: var(--navbar-text); box-shadow: var(--shadow-lg); overflow-y: auto; display: flex; flex-direction: column; }
   .drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 6px 8px 0; }
   .mobile-header .brand, .drawer-header .brand { padding: 0; }
-  .drawer-header button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--navbar-surface); color: var(--navbar-text); }
+  .drawer-header button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--navbar-surface); color: var(--navbar-text); }
   .drawer-panel .property-switcher { margin-bottom: 14px; }
 }
