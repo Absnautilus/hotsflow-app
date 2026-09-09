@@ -103,14 +103,10 @@ body.modal-open { overflow: hidden; }
 .form-error { margin: 0; color: var(--red-ink); font-size: 12px; }
 
 .flag-icon { display: inline-flex; width: 22px; height: 22px; border-radius: 999px; overflow: hidden; flex: 0 0 auto; box-shadow: 0 0 0 1px var(--line); }
-.lang-toggle { position: relative; }
-.lang-toggle-trigger { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); cursor: pointer; }
-.lang-toggle-trigger:hover { border-color: var(--accent-soft-line); }
-.lang-toggle-panel { position: absolute; z-index: var(--z-dropdown, 100); top: calc(100% + 6px); right: 0; margin: 0; padding: 6px; list-style: none; min-width: 160px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-lg); }
-.lang-toggle-panel.align-right { right: 0; left: auto; }
-.lang-toggle-option { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.lang-toggle { display: flex; gap: 6px; }
+.lang-toggle-option { width: 44px; height: 44px; display: grid; place-items: center; border: 1.5px solid transparent; border-radius: 999px; background: transparent; cursor: pointer; }
 .lang-toggle-option:hover { background: var(--surface-2); }
-.lang-toggle-option.current { color: var(--accent); background: var(--accent-soft); }
+.lang-toggle-option.current { border-color: var(--accent); }
 
 .select-root { position: relative; }
 .select-trigger { width: 100%; min-height: 44px; padding: 0 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
