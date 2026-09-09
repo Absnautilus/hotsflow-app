@@ -23,6 +23,8 @@
   --navbar-text-muted: #b9babf;
   --navbar-icon: #adaeb5;
   --navbar-surface: rgba(255, 255, 255, 0.06);
+  --navbar-surface-solid: #21233c;
+  --navbar-surface-solid-hover: #292b48;
   --navbar-surface-hover: rgba(255, 255, 255, 0.1);
   --navbar-surface-active: rgba(255, 255, 255, 0.09);
   --navbar-border: rgba(255, 255, 255, 0.14);
@@ -142,7 +144,8 @@ a { color: inherit; text-decoration: none; }
 .brand .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; font-family: var(--f-head); flex-shrink: 0; }
 
 .property-switcher-root { position: relative; margin-bottom: 18px; }
-.property-switcher { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid var(--navbar-border); border-radius: var(--r-sm); background: var(--navbar-surface); color: var(--navbar-text); cursor: pointer; text-align: left; font: inherit; }
+.property-switcher { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid var(--navbar-border); border-radius: var(--r-sm); background: var(--navbar-surface-solid); color: var(--navbar-text); cursor: pointer; text-align: left; font: inherit; }
+.property-switcher:hover { background: var(--navbar-surface-solid-hover); }
 .property-switcher .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; flex-shrink: 0; color: #fff; }
 .property-switcher span { min-width: 0; display: grid; gap: 1px; flex: 1; }
 .property-switcher strong, .property-switcher small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }

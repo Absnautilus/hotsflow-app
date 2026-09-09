@@ -117,7 +117,7 @@ export function Select({
               aria-selected={option.value === value}
               aria-disabled={option.disabled}
               onMouseEnter={() => setHighlighted(index)}
-              onClick={() => commit(index)}
+              onMouseDown={(event) => { event.preventDefault(); commit(index) }}
               className={`select-option${option.disabled ? ' disabled' : ''}${index === highlighted ? ' highlighted' : ''}`}
             >
               <span>{option.label}</span>
