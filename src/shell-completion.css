@@ -45,7 +45,9 @@
 .status-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 999px; background: #46a66b; }
 .status-dot.inactive { background: var(--muted); }
 .row-action, .icon-button { width: 44px; height: 44px; border: 0; border-radius: 8px; display: grid; place-items: center; background: transparent; color: var(--muted); cursor: pointer; }
-.row-action:hover, .icon-button:hover { background: var(--surface-2); color: var(--accent); }
+.icon-button:hover { background: var(--surface-2); color: var(--accent); }
+.row-action:hover { color: var(--accent); }
+.row-action.danger:hover { color: var(--red-ink); }
 .team-empty { min-height: 130px; display: grid; place-items: center; align-content: center; gap: 8px; color: var(--muted); }
 .team-empty p { margin: 0; }
 .section-footnote { margin: 12px 20px 16px; color: var(--muted); font-size: 11px; }
