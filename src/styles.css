@@ -146,7 +146,7 @@ a { color: inherit; text-decoration: none; }
 .property-switcher-root { position: relative; margin-bottom: 18px; }
 .property-switcher { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 1px solid var(--navbar-border); border-radius: var(--r-sm); background: var(--navbar-surface-solid); color: var(--navbar-text); cursor: pointer; text-align: left; font: inherit; }
 .property-switcher:hover { background: var(--navbar-surface-solid-hover); }
-.property-switcher .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; flex-shrink: 0; color: #fff; }
+.property-switcher .mk { width: 26px; height: 26px; border-radius: 999px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; flex-shrink: 0; color: #fff; }
 .property-switcher span { min-width: 0; display: grid; gap: 1px; flex: 1; }
 .property-switcher strong, .property-switcher small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
 .property-switcher strong { font-size: 12.5px; font-weight: 700; }
@@ -159,7 +159,7 @@ a { color: inherit; text-decoration: none; }
 .switch-panel-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 13px; border: 0; background: transparent; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
 .switch-panel-row:hover { background: var(--surface-2); }
 .switch-panel-row.current { background: var(--accent-soft); }
-.switch-panel-row .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+.switch-panel-row .mk { width: 26px; height: 26px; border-radius: 999px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
 .switch-panel-row .n { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .switch-panel-row .check { color: var(--accent); flex-shrink: 0; }
 
