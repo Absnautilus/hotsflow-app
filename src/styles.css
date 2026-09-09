@@ -23,8 +23,8 @@
   --navbar-text-muted: #b9babf;
   --navbar-icon: #adaeb5;
   --navbar-surface: rgba(255, 255, 255, 0.06);
-  --navbar-surface-solid: #21233c;
-  --navbar-surface-solid-hover: #292b48;
+  --navbar-surface-solid: #2a2c4a;
+  --navbar-surface-solid-hover: #33355a;
   --navbar-surface-hover: rgba(255, 255, 255, 0.1);
   --navbar-surface-active: rgba(255, 255, 255, 0.09);
   --navbar-border: rgba(255, 255, 255, 0.14);
