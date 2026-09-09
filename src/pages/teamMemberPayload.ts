@@ -1,4 +1,4 @@
-import type { MembershipStatus, TeamMember, UpdateTeamMemberInput } from '@hotsflow/core-sdk'
+import type { TeamMember, UpdateTeamMemberInput } from '@hotsflow/core-sdk'
 
 interface FormValues {
   get(name: string): FormDataEntryValue | null
@@ -22,7 +22,6 @@ export function buildTeamMemberUpdateInput(
   const orgWide = member.membership.propertyId == null
   if (!isSelf && !orgWide) {
     input.roleId = requiredTextValue(form, 'role')
-    input.membershipStatus = membershipStatus(form)
   }
 
   return input
@@ -36,14 +35,6 @@ function textValue(form: FormValues, name: string): string {
 function requiredTextValue(form: FormValues, name: string): string {
   const value = textValue(form, name)
   if (!value) throw new Error(`missing_${name}`)
-  return value
-}
-
-function membershipStatus(form: FormValues): MembershipStatus {
-  const value = requiredTextValue(form, 'accessStatus')
-  if (value !== 'active' && value !== 'invited' && value !== 'suspended') {
-    throw new Error('invalid_access_status')
-  }
   return value
 }
 

@@ -4,6 +4,7 @@ import { BriefcaseBusiness, Pencil, Plus, ShieldCheck, Trash2, UserPlus, Users }
 import { Modal } from '../components/Modal'
 import { useConfirm } from '../components/ConfirmDialog'
 import { Select } from '../components/Select'
+import { Switch } from '../components/Switch'
 import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 import { buildTeamMemberUpdateInput } from './teamMemberPayload'
@@ -27,7 +28,22 @@ export function TeamPage() {
   const [editing, setEditing] = useState<TeamMember | null>(null)
   const [jobEditor, setJobEditor] = useState<JobTitle | 'new' | null>(null)
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
+  const [togglingId, setTogglingId] = useState<string | null>(null)
   const [confirmDialog, confirm] = useConfirm()
+
+  async function onToggleAccess(member: TeamMember) {
+    if (!property) return
+    const next = member.membership.status === 'active' ? 'suspended' : 'active'
+    setTogglingId(member.membership.id)
+    try {
+      await core.updateTeamMember({ membershipId: member.membership.id, profileId: member.profile.id, propertyId: property.id, membershipStatus: next })
+      await loadTeam()
+    } catch (cause) {
+      setError(readableError(cause))
+    } finally {
+      setTogglingId(null)
+    }
+  }
 
   async function onRemoveMember(member: TeamMember) {
     const ok = await confirm({
@@ -86,12 +102,29 @@ export function TeamPage() {
             <span role="columnheader">Stato</span>
             <span role="columnheader" aria-hidden="true" />
           </div>
-          {!loading && visibleMembers.map((member) => (
+          {!loading && visibleMembers.map((member) => {
+            const isSelf = member.profile.id === runtime.profile?.id
+            const orgWide = member.membership.propertyId == null
+            return (
             <div className="team-row" role="row" key={member.membership.id}>
               <span className="team-person" role="cell"><span className="mini-avatar">{initials(member.profile.fullName)}</span><strong>{member.profile.fullName}</strong></span>
               <span role="cell">{roleLabel(member.role.slug, member.role.displayName)}</span>
               <span role="cell" className={member.jobTitle ? '' : 'muted'}>{member.jobTitle?.name ?? 'Da assegnare'}</span>
-              <span role="cell"><span className={`status-dot ${member.membership.status !== 'active' || member.employmentStatus !== 'active' ? 'inactive' : ''}`} /> {memberStatus(member)}</span>
+              <span role="cell" className="team-status-cell">
+                {team.canManage && !isSelf && !orgWide ? (
+                  <>
+                    <Switch
+                      checked={member.membership.status === 'active'}
+                      onChange={() => onToggleAccess(member)}
+                      disabled={togglingId === member.membership.id}
+                      aria-label={`Stato accesso di ${member.profile.fullName}`}
+                    />
+                    {member.employmentStatus === 'inactive' ? <small className="muted">Fuori organico</small> : null}
+                  </>
+                ) : (
+                  <><span className={`status-dot ${member.membership.status !== 'active' || member.employmentStatus !== 'active' ? 'inactive' : ''}`} /> {memberStatus(member)}</>
+                )}
+              </span>
               <span role="cell" className="team-row-actions">
                 {team.canManage ? (
                   <>
@@ -101,7 +134,7 @@ export function TeamPage() {
                 ) : null}
               </span>
             </div>
-          ))}
+          )})}
         </div>
         {!loading && team.members.length === 0 ? <div className="team-empty"><Users size={22} /><p>Nessuna persona collegata a questa struttura.</p></div> : null}
       </section>
@@ -158,14 +191,12 @@ function EditMemberModal({ member, roles, jobTitles, currentProfileId, propertyI
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [roleId, setRoleId] = useState('')
-  const [accessStatus, setAccessStatus] = useState('active')
   const [jobId, setJobId] = useState('')
   const [employmentStatus, setEmploymentStatus] = useState('active')
   useEffect(() => {
     if (!member) return
     setSaving(false); setError(null)
     setRoleId(member.role.id)
-    setAccessStatus(member.membership.status)
     setJobId(member.jobTitle?.id ?? '')
     setEmploymentStatus(member.employmentStatus)
   }, [member])
@@ -181,7 +212,6 @@ function EditMemberModal({ member, roles, jobTitles, currentProfileId, propertyI
   return <Modal open={Boolean(member)} title={member ? `Modifica ${member.profile.fullName}` : 'Modifica persona'} description={orgWide ? 'L’accesso organizzazione si modifica a livello organizzazione; qui puoi assegnare la mansione locale.' : undefined} onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="edit-member-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button></>}>
     {member ? <form className="modal-form" id="edit-member-form" onSubmit={submit}>
       <Field label="Accesso Hotsflow" htmlFor="edit-role"><Select id="edit-role" name="role" value={roleId} onChange={setRoleId} disabled={orgWide || isSelf}><option value={member.role.id}>{roleLabel(member.role.slug, member.role.displayName)}</option>{roles.filter((role) => role.id !== member.role.id).map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</Select></Field>
-      <Field label="Stato accesso" htmlFor="edit-access-status"><Select id="edit-access-status" name="accessStatus" value={accessStatus} onChange={setAccessStatus} disabled={orgWide || isSelf}><option value="active">Attivo</option><option value="suspended">Sospeso</option></Select></Field>
       <Field label="Mansione" htmlFor="edit-job"><Select id="edit-job" name="job" value={jobId} onChange={setJobId}><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</Select></Field>
       <Field label="Stato lavorativo" htmlFor="edit-employment-status"><Select id="edit-employment-status" name="employmentStatus" value={employmentStatus} onChange={setEmploymentStatus}><option value="active">In organico</option><option value="inactive">Non più in organico</option></Select></Field>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
