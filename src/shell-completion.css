@@ -103,10 +103,10 @@ body.modal-open { overflow: hidden; }
 .form-error { margin: 0; color: var(--red-ink); font-size: 12px; }
 
 .flag-icon { display: inline-flex; width: 22px; height: 22px; border-radius: 999px; overflow: hidden; flex: 0 0 auto; box-shadow: 0 0 0 1px var(--line); }
-.lang-toggle { display: flex; gap: 6px; }
-.lang-toggle-option { width: 44px; height: 44px; display: grid; place-items: center; border: 1.5px solid transparent; border-radius: 999px; background: transparent; cursor: pointer; }
-.lang-toggle-option:hover { background: var(--surface-2); }
-.lang-toggle-option.current { border-color: var(--accent); }
+.lang-toggle { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.lang-toggle-option { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 999px; background: transparent; cursor: pointer; transition: background var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease); }
+.lang-toggle-option:hover { background: var(--line); }
+.lang-toggle-option.current { background: var(--surface); box-shadow: var(--shadow-sm), 0 0 0 1.5px var(--accent); }
 
 .select-root { position: relative; }
 .select-trigger { width: 100%; min-height: 44px; padding: 0 11px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
