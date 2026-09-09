@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import type { CoreRole, JobTitle, TeamMember } from '@hotsflow/core-sdk'
-import { BriefcaseBusiness, Pencil, Plus, ShieldCheck, UserPlus, Users } from 'lucide-react'
+import { BriefcaseBusiness, Pencil, Plus, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { useConfirm } from '../components/ConfirmDialog'
 import { Select } from '../components/Select'
 import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
@@ -25,6 +26,18 @@ export function TeamPage() {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [editing, setEditing] = useState<TeamMember | null>(null)
   const [jobEditor, setJobEditor] = useState<JobTitle | 'new' | null>(null)
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
+  const [confirmDialog, confirm] = useConfirm()
+
+  async function onRemoveMember(member: TeamMember) {
+    const ok = await confirm({
+      title: `Rimuovere ${member.profile.fullName}?`,
+      description: 'La persona verrà tolta da questo elenco.',
+      confirmLabel: 'Rimuovi',
+    })
+    if (!ok) return
+    setRemovedIds((current) => new Set(current).add(member.profile.id))
+  }
 
   const loadTeam = useCallback(async () => {
     if (!property) return
@@ -44,6 +57,7 @@ export function TeamPage() {
   const currentMember = team.members.find((member) => member.profile.id === runtime.profile?.id)
   const assignableRoles = team.roles.filter((role) => role.rank < (currentMember?.role.rank ?? 0))
   const propertyName = property?.name ?? 'Struttura'
+  const visibleMembers = team.members.filter((member) => !removedIds.has(member.profile.id))
 
   return (
     <div className="page-stack shell-page team-page">
@@ -62,7 +76,7 @@ export function TeamPage() {
       <section className="shell-card">
         <div className="section-heading split">
           <div><h2>Persone</h2><p>Il team collegato a {propertyName}.</p></div>
-          <span className="status-chip">{loading ? 'Caricamento…' : `${team.members.length} ${team.members.length === 1 ? 'profilo' : 'profili'}`}</span>
+          <span className="status-chip">{loading ? 'Caricamento…' : `${visibleMembers.length} ${visibleMembers.length === 1 ? 'profilo' : 'profili'}`}</span>
         </div>
         <div className="team-table" role="table" aria-label="Team">
           <div className="team-row team-row-head" role="row">
@@ -72,13 +86,20 @@ export function TeamPage() {
             <span role="columnheader">Stato</span>
             <span role="columnheader" aria-hidden="true" />
           </div>
-          {!loading && team.members.map((member) => (
+          {!loading && visibleMembers.map((member) => (
             <div className="team-row" role="row" key={member.membership.id}>
               <span className="team-person" role="cell"><span className="mini-avatar">{initials(member.profile.fullName)}</span><strong>{member.profile.fullName}</strong></span>
               <span role="cell">{roleLabel(member.role.slug, member.role.displayName)}</span>
               <span role="cell" className={member.jobTitle ? '' : 'muted'}>{member.jobTitle?.name ?? 'Da assegnare'}</span>
               <span role="cell"><span className={`status-dot ${member.membership.status !== 'active' || member.employmentStatus !== 'active' ? 'inactive' : ''}`} /> {memberStatus(member)}</span>
-              <span role="cell">{team.canManage ? <button className="row-action" type="button" onClick={() => setEditing(member)} aria-label={`Modifica ${member.profile.fullName}`}><Pencil size={15} /></button> : null}</span>
+              <span role="cell" className="team-row-actions">
+                {team.canManage ? (
+                  <>
+                    <button className="row-action" type="button" onClick={() => setEditing(member)} aria-label={`Modifica ${member.profile.fullName}`}><Pencil size={15} /></button>
+                    <button className="row-action danger" type="button" onClick={() => onRemoveMember(member)} aria-label={`Rimuovi ${member.profile.fullName}`}><Trash2 size={15} /></button>
+                  </>
+                ) : null}
+              </span>
             </div>
           ))}
         </div>
@@ -102,6 +123,7 @@ export function TeamPage() {
       <InviteModal open={inviteOpen} propertyId={property?.id ?? ''} roles={assignableRoles} jobTitles={team.jobTitles.filter((job) => job.active)} onClose={() => setInviteOpen(false)} onSaved={async () => { setInviteOpen(false); await loadTeam() }} />
       <EditMemberModal member={editing} roles={assignableRoles} jobTitles={team.jobTitles.filter((job) => job.active)} currentProfileId={runtime.profile?.id ?? ''} propertyId={property?.id ?? ''} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await loadTeam() }} />
       <JobModal job={jobEditor} propertyId={property?.id ?? ''} onClose={() => setJobEditor(null)} onSaved={async () => { setJobEditor(null); await loadTeam() }} />
+      {confirmDialog}
     </div>
   )
 }
