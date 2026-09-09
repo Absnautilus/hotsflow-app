@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNo
 import type { CoreRole, JobTitle, TeamMember } from '@hotsflow/core-sdk'
 import { BriefcaseBusiness, Pencil, Plus, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { Select } from '../components/Select'
 import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 import { buildTeamMemberUpdateInput } from './teamMemberPayload'
@@ -64,14 +65,20 @@ export function TeamPage() {
           <span className="status-chip">{loading ? 'Caricamento…' : `${team.members.length} ${team.members.length === 1 ? 'profilo' : 'profili'}`}</span>
         </div>
         <div className="team-table" role="table" aria-label="Team">
-          <div className="team-row team-row-head" role="row"><span>Persona</span><span>Accesso Hotsflow</span><span>Mansione</span><span>Stato</span><span aria-hidden="true" /></div>
+          <div className="team-row team-row-head" role="row">
+            <span role="columnheader">Persona</span>
+            <span role="columnheader">Accesso Hotsflow</span>
+            <span role="columnheader">Mansione</span>
+            <span role="columnheader">Stato</span>
+            <span role="columnheader" aria-hidden="true" />
+          </div>
           {!loading && team.members.map((member) => (
             <div className="team-row" role="row" key={member.membership.id}>
-              <span className="team-person"><span className="mini-avatar">{initials(member.profile.fullName)}</span><strong>{member.profile.fullName}</strong></span>
-              <span>{roleLabel(member.role.slug, member.role.displayName)}</span>
-              <span className={member.jobTitle ? '' : 'muted'}>{member.jobTitle?.name ?? 'Da assegnare'}</span>
-              <span><span className={`status-dot ${member.membership.status !== 'active' || member.employmentStatus !== 'active' ? 'inactive' : ''}`} /> {memberStatus(member)}</span>
-              <span>{team.canManage ? <button className="row-action" type="button" onClick={() => setEditing(member)} aria-label={`Modifica ${member.profile.fullName}`}><Pencil size={15} /></button> : null}</span>
+              <span className="team-person" role="cell"><span className="mini-avatar">{initials(member.profile.fullName)}</span><strong>{member.profile.fullName}</strong></span>
+              <span role="cell">{roleLabel(member.role.slug, member.role.displayName)}</span>
+              <span role="cell" className={member.jobTitle ? '' : 'muted'}>{member.jobTitle?.name ?? 'Da assegnare'}</span>
+              <span role="cell"><span className={`status-dot ${member.membership.status !== 'active' || member.employmentStatus !== 'active' ? 'inactive' : ''}`} /> {memberStatus(member)}</span>
+              <span role="cell">{team.canManage ? <button className="row-action" type="button" onClick={() => setEditing(member)} aria-label={`Modifica ${member.profile.fullName}`}><Pencil size={15} /></button> : null}</span>
             </div>
           ))}
         </div>
@@ -102,11 +109,15 @@ export function TeamPage() {
 function InviteModal({ open, propertyId, roles, jobTitles, onClose, onSaved }: { open: boolean; propertyId: string; roles: CoreRole[]; jobTitles: JobTitle[]; onClose: () => void; onSaved: () => Promise<void> }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  useEffect(() => { if (open) { setSaving(false); setError(null) } }, [open])
+  const [roleId, setRoleId] = useState('')
+  const [jobId, setJobId] = useState('')
+  useEffect(() => { if (open) { setSaving(false); setError(null); setRoleId(''); setJobId('') } }, [open])
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); const form = new FormData(event.currentTarget); setSaving(true); setError(null)
+    event.preventDefault()
+    if (!roleId) { setError('Seleziona un ruolo.'); return }
+    const form = new FormData(event.currentTarget); setSaving(true); setError(null)
     try {
-      await core.inviteTeamMember({ propertyId, fullName: String(form.get('name')), email: String(form.get('email')), roleId: String(form.get('role')), jobTitleId: String(form.get('job')) || null })
+      await core.inviteTeamMember({ propertyId, fullName: String(form.get('name')), email: String(form.get('email')), roleId, jobTitleId: jobId || null })
       await onSaved()
     } catch (cause) { setError(readableError(cause)); setSaving(false) }
   }
@@ -114,8 +125,8 @@ function InviteModal({ open, propertyId, roles, jobTitles, onClose, onSaved }: {
     <form className="modal-form" id="invite-form" onSubmit={submit}>
       <Field label="Nome e cognome"><input name="name" required minLength={2} maxLength={120} autoComplete="name" /></Field>
       <Field label="Email"><input name="email" type="email" required autoComplete="email" /></Field>
-      <Field label="Accesso Hotsflow"><select name="role" required defaultValue=""><option value="" disabled>Seleziona ruolo</option>{roles.map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</select></Field>
-      <Field label="Mansione"><select name="job" defaultValue=""><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</select></Field>
+      <Field label="Accesso Hotsflow" htmlFor="invite-role"><Select id="invite-role" name="role" value={roleId} onChange={setRoleId}><option value="" disabled>Seleziona ruolo</option>{roles.map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</Select></Field>
+      <Field label="Mansione" htmlFor="invite-job"><Select id="invite-job" name="job" value={jobId} onChange={setJobId}><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</Select></Field>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
     </form>
   </Modal>
@@ -124,7 +135,18 @@ function InviteModal({ open, propertyId, roles, jobTitles, onClose, onSaved }: {
 function EditMemberModal({ member, roles, jobTitles, currentProfileId, propertyId, onClose, onSaved }: { member: TeamMember | null; roles: CoreRole[]; jobTitles: JobTitle[]; currentProfileId: string; propertyId: string; onClose: () => void; onSaved: () => Promise<void> }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  useEffect(() => { if (member) { setSaving(false); setError(null) } }, [member])
+  const [roleId, setRoleId] = useState('')
+  const [accessStatus, setAccessStatus] = useState('active')
+  const [jobId, setJobId] = useState('')
+  const [employmentStatus, setEmploymentStatus] = useState('active')
+  useEffect(() => {
+    if (!member) return
+    setSaving(false); setError(null)
+    setRoleId(member.role.id)
+    setAccessStatus(member.membership.status)
+    setJobId(member.jobTitle?.id ?? '')
+    setEmploymentStatus(member.employmentStatus)
+  }, [member])
   const isSelf = member?.profile.id === currentProfileId
   const orgWide = member?.membership.propertyId == null
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -136,10 +158,10 @@ function EditMemberModal({ member, roles, jobTitles, currentProfileId, propertyI
   }
   return <Modal open={Boolean(member)} title={member ? `Modifica ${member.profile.fullName}` : 'Modifica persona'} description={orgWide ? 'L’accesso organizzazione si modifica a livello organizzazione; qui puoi assegnare la mansione locale.' : undefined} onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="edit-member-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button></>}>
     {member ? <form className="modal-form" id="edit-member-form" onSubmit={submit}>
-      <Field label="Accesso Hotsflow"><select name="role" defaultValue={member.role.id} disabled={orgWide || isSelf}><option value={member.role.id}>{roleLabel(member.role.slug, member.role.displayName)}</option>{roles.filter((role) => role.id !== member.role.id).map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</select></Field>
-      <Field label="Stato accesso"><select name="accessStatus" defaultValue={member.membership.status} disabled={orgWide || isSelf}><option value="active">Attivo</option><option value="suspended">Sospeso</option></select></Field>
-      <Field label="Mansione"><select name="job" defaultValue={member.jobTitle?.id ?? ''}><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</select></Field>
-      <Field label="Stato lavorativo"><select name="employmentStatus" defaultValue={member.employmentStatus}><option value="active">In organico</option><option value="inactive">Non più in organico</option></select></Field>
+      <Field label="Accesso Hotsflow" htmlFor="edit-role"><Select id="edit-role" name="role" value={roleId} onChange={setRoleId} disabled={orgWide || isSelf}><option value={member.role.id}>{roleLabel(member.role.slug, member.role.displayName)}</option>{roles.filter((role) => role.id !== member.role.id).map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</Select></Field>
+      <Field label="Stato accesso" htmlFor="edit-access-status"><Select id="edit-access-status" name="accessStatus" value={accessStatus} onChange={setAccessStatus} disabled={orgWide || isSelf}><option value="active">Attivo</option><option value="suspended">Sospeso</option></Select></Field>
+      <Field label="Mansione" htmlFor="edit-job"><Select id="edit-job" name="job" value={jobId} onChange={setJobId}><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</Select></Field>
+      <Field label="Stato lavorativo" htmlFor="edit-employment-status"><Select id="edit-employment-status" name="employmentStatus" value={employmentStatus} onChange={setEmploymentStatus}><option value="active">In organico</option><option value="inactive">Non più in organico</option></Select></Field>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
     </form> : null}
   </Modal>
@@ -186,7 +208,7 @@ function SuggestedJobs({ existing, propertyId, onChanged }: { existing: JobTitle
   return <div className="job-suggestions"><span>Suggerimenti</span><div>{missing.map((job) => <button type="button" key={job} disabled={saving !== null} onClick={() => void activate(job)}><Plus size={13} />{saving === job ? 'Attivazione…' : job}</button>)}</div>{error ? <p className="form-error" role="alert">{error}</p> : null}</div>
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="form-field"><span>{label}</span>{children}</label> }
+function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: ReactNode }) { return <label className="form-field" htmlFor={htmlFor}><span>{label}</span>{children}</label> }
 function initials(name: string) { return name.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() }
 function roleLabel(slug: string, fallback: string) { return ({ organization_admin: 'Admin organizzazione', property_admin: 'Admin struttura', manager: 'Manager', receptionist: 'Operatore' } as Record<string, string>)[slug] ?? fallback }
 function memberStatus(member: TeamMember) { if (member.employmentStatus === 'inactive') return 'Fuori organico'; if (member.membership.status === 'suspended') return 'Accesso sospeso'; return 'Attivo' }

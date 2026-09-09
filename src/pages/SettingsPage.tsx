@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Bell, Building2, ChevronRight, Globe2, LockKeyhole, Puzzle, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { LanguageToggle } from '../components/LanguageToggle'
 import { Modal } from '../components/Modal'
+import { Select } from '../components/Select'
 import { core } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 import { useHousekeepingAccess } from '../modules/housekeeping/useHousekeepingAccess'
@@ -27,12 +29,6 @@ export function SettingsPage() {
     return () => window.removeEventListener('hotsflow:language-change', syncLanguage)
   }, [])
 
-  function selectLanguage(next: 'it' | 'en') {
-    localStorage.setItem('hotsflow.language', next)
-    setLanguage(next)
-    window.dispatchEvent(new CustomEvent('hotsflow:language-change', { detail: next }))
-  }
-
   return (
     <div className="page-stack shell-page settings-page">
       <header className="page-heading">
@@ -55,10 +51,7 @@ export function SettingsPage() {
           <SettingRow icon={<UserRound size={17} />} title="Profilo" detail={profileName} onClick={() => setProfileOpen(true)} />
           <div className="settings-row settings-row-control">
             <span className="settings-row-main"><span className="settings-row-icon"><Globe2 size={17} /></span><span><strong>Lingua</strong><small>{language === 'en' ? 'English' : 'Italiano'}</small></span></span>
-            <div className="language-segment" aria-label="Lingua della suite">
-              <button type="button" className={language === 'it' ? 'active' : ''} aria-pressed={language === 'it'} onClick={() => selectLanguage('it')}>IT</button>
-              <button type="button" className={language === 'en' ? 'active' : ''} aria-pressed={language === 'en'} onClick={() => selectLanguage('en')}>EN</button>
-            </div>
+            <LanguageToggle />
           </div>
           <SettingRow icon={<Bell size={17} />} title="Notifiche" detail="Preferenze globali" status="Non ancora disponibile" muted />
           <SettingRow icon={<LockKeyhole size={17} />} title="Sicurezza" detail="Password e sessioni" status="Non ancora disponibile" muted />
@@ -125,21 +118,22 @@ function PropertyModal({ open, onClose, onSaved }: { open: boolean; onClose: () 
   const runtime = useModuleRuntime()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  useEffect(() => { if (open) { setSaving(false); setError(null) } }, [open])
+  const [timezone, setTimezone] = useState('Europe/Rome')
+  useEffect(() => { if (open) { setSaving(false); setError(null); setTimezone(runtime.property?.timezone ?? 'Europe/Rome') } }, [open, runtime.property?.timezone])
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!runtime.property) return
     const form = new FormData(event.currentTarget)
     setSaving(true); setError(null)
     try {
-      await core.updateProperty(runtime.property.id, { name: String(form.get('name')), timezone: String(form.get('timezone')) })
+      await core.updateProperty(runtime.property.id, { name: String(form.get('name')), timezone })
       await onSaved()
     } catch { setError('Non è stato possibile aggiornare la struttura.'); setSaving(false) }
   }
   return <Modal open={open} title="Informazioni struttura" description="Dati condivisi da tutti i moduli Hotsflow." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="property-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button></>}>
     <form className="modal-form" id="property-form" onSubmit={submit}>
       <label className="form-field"><span>Nome struttura</span><input name="name" required minLength={2} maxLength={120} defaultValue={runtime.property?.name} /></label>
-      <label className="form-field"><span>Fuso orario</span><select name="timezone" defaultValue={runtime.property?.timezone ?? 'Europe/Rome'}><option value="Europe/Rome">Europa — Roma</option><option value="Europe/London">Europa — Londra</option><option value="Europe/Amsterdam">Europa — Amsterdam</option><option value="America/Mexico_City">America — Città del Messico</option><option value="America/New_York">America — New York</option></select></label>
+      <label className="form-field" htmlFor="property-timezone"><span>Fuso orario</span><Select id="property-timezone" name="timezone" value={timezone} onChange={setTimezone}><option value="Europe/Rome">Europa — Roma</option><option value="Europe/London">Europa — Londra</option><option value="Europe/Amsterdam">Europa — Amsterdam</option><option value="America/Mexico_City">America — Città del Messico</option><option value="America/New_York">America — New York</option></Select></label>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
     </form>
   </Modal>
