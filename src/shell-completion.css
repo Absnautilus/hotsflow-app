@@ -107,6 +107,12 @@ body.modal-open { overflow: hidden; }
 .form-field > span { color: var(--muted); font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
 .form-field input, .form-field select { width: 100%; min-height: 42px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); }
 .form-field input[readonly], .form-field select:disabled { background: var(--surface-2); color: var(--muted); }
+.form-field input[readonly] { font-family: var(--mono); font-size: 12.5px; }
+
+.mode-toggle { display: inline-flex; gap: 2px; padding: 3px; margin-bottom: 4px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.mode-toggle button { flex: 1; min-height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: background var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease); }
+.mode-toggle button:hover { color: var(--ink-2); }
+.mode-toggle button.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
 .form-error { margin: 0; color: var(--red-ink); font-size: 12px; }
 
 .flag-icon { display: inline-flex; width: 22px; height: 22px; border-radius: 999px; overflow: hidden; flex: 0 0 auto; box-shadow: 0 0 0 1px var(--line); }

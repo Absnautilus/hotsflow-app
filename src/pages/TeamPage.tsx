@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import type { CoreRole, JobTitle, TeamMember } from '@hotsflow/core-sdk'
-import { BriefcaseBusiness, Pencil, Plus, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react'
+import { BriefcaseBusiness, KeyRound, Pencil, Plus, ShieldCheck, Trash2, UserPlus, Users } from 'lucide-react'
 import { Modal } from '../components/Modal'
+import { PasswordField } from '../components/PasswordField'
 import { useConfirm } from '../components/ConfirmDialog'
 import { Select } from '../components/Select'
 import { Switch } from '../components/Switch'
@@ -24,8 +25,9 @@ export function TeamPage() {
   const [team, setTeam] = useState<TeamState>(emptyTeam)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [inviteOpen, setInviteOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<TeamMember | null>(null)
+  const [resettingPassword, setResettingPassword] = useState<TeamMember | null>(null)
   const [jobEditor, setJobEditor] = useState<JobTitle | 'new' | null>(null)
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
   const [togglingId, setTogglingId] = useState<string | null>(null)
@@ -79,7 +81,7 @@ export function TeamPage() {
     <div className="page-stack shell-page team-page">
       <header className="page-heading split">
         <div><p className="eyebrow">{propertyName}</p><h1>Team</h1><p>Persone, accessi Hotsflow e mansioni operative della struttura.</p></div>
-        {team.canManage ? <button className="primary-action" type="button" onClick={() => setInviteOpen(true)}><UserPlus size={17} /> Invita persona</button> : null}
+        {team.canManage ? <button className="primary-action" type="button" onClick={() => setCreateOpen(true)}><UserPlus size={17} /> Crea profilo</button> : null}
       </header>
 
       <section className="shell-card team-principle-card">
@@ -123,6 +125,9 @@ export function TeamPage() {
                 {team.canManage ? (
                   <>
                     <button className="row-action" type="button" onClick={() => setEditing(member)} aria-label={`Modifica ${member.profile.fullName}`}><Pencil size={15} /></button>
+                    {member.membership.username ? (
+                      <button className="row-action" type="button" onClick={() => setResettingPassword(member)} aria-label={`Reimposta pin di ${member.profile.fullName}`}><KeyRound size={15} /></button>
+                    ) : null}
                     <button className="row-action danger" type="button" onClick={() => onRemoveMember(member)} aria-label={`Rimuovi ${member.profile.fullName}`}><Trash2 size={15} /></button>
                   </>
                 ) : null}
@@ -147,37 +152,111 @@ export function TeamPage() {
         {team.canManage ? <SuggestedJobs existing={team.jobTitles} propertyId={property?.id ?? ''} onChanged={loadTeam} /> : null}
       </section>
 
-      <InviteModal open={inviteOpen} propertyId={property?.id ?? ''} roles={assignableRoles} jobTitles={team.jobTitles.filter((job) => job.active)} onClose={() => setInviteOpen(false)} onSaved={async () => { setInviteOpen(false); await loadTeam() }} />
+      <CreateProfileModal open={createOpen} propertyId={property?.id ?? ''} roles={assignableRoles} jobTitles={team.jobTitles.filter((job) => job.active)} onClose={() => setCreateOpen(false)} onCreated={loadTeam} />
       <EditMemberModal member={editing} roles={assignableRoles} jobTitles={team.jobTitles.filter((job) => job.active)} currentProfileId={runtime.profile?.id ?? ''} propertyId={property?.id ?? ''} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await loadTeam() }} />
+      <ResetPasswordModal member={resettingPassword} onClose={() => setResettingPassword(null)} />
       <JobModal job={jobEditor} propertyId={property?.id ?? ''} onClose={() => setJobEditor(null)} onSaved={async () => { setJobEditor(null); await loadTeam() }} />
       {confirmDialog}
     </div>
   )
 }
 
-function InviteModal({ open, propertyId, roles, jobTitles, onClose, onSaved }: { open: boolean; propertyId: string; roles: CoreRole[]; jobTitles: JobTitle[]; onClose: () => void; onSaved: () => Promise<void> }) {
+function CreateProfileModal({ open, propertyId, roles, jobTitles, onClose, onCreated }: { open: boolean; propertyId: string; roles: CoreRole[]; jobTitles: JobTitle[]; onClose: () => void; onCreated: () => Promise<void> }) {
+  const [mode, setMode] = useState<'email' | 'credentials'>('email')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [roleId, setRoleId] = useState('')
   const [jobId, setJobId] = useState('')
-  useEffect(() => { if (open) { setSaving(false); setError(null); setRoleId(''); setJobId('') } }, [open])
+  const [created, setCreated] = useState<{ loginIdentifier: string; password: string } | null>(null)
+  useEffect(() => { if (open) { setMode('email'); setSaving(false); setError(null); setRoleId(''); setJobId(''); setCreated(null) } }, [open])
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!roleId) { setError('Seleziona un ruolo.'); return }
-    const form = new FormData(event.currentTarget); setSaving(true); setError(null)
+    const form = new FormData(event.currentTarget)
+    const fullName = String(form.get('name'))
+
+    if (mode === 'email') {
+      setSaving(true); setError(null)
+      try {
+        await core.inviteTeamMember({ propertyId, fullName, email: String(form.get('email')), roleId, jobTitleId: jobId || null })
+        await onCreated()
+        onClose()
+      } catch (cause) { setError(readableError(cause)); setSaving(false) }
+      return
+    }
+
+    const password = String(form.get('password'))
+    const passwordConfirm = String(form.get('passwordConfirm'))
+    if (password !== passwordConfirm) { setError('Le due password non coincidono.'); return }
+    setSaving(true); setError(null)
     try {
-      await core.inviteTeamMember({ propertyId, fullName: String(form.get('name')), email: String(form.get('email')), roleId, jobTitleId: jobId || null })
-      await onSaved()
+      const result = await core.createTeamMemberWithCredentials({ propertyId, fullName, username: String(form.get('username')), password, roleId, jobTitleId: jobId || null })
+      await onCreated()
+      setCreated({ loginIdentifier: result.loginIdentifier, password })
     } catch (cause) { setError(readableError(cause)); setSaving(false) }
   }
-  return <Modal open={open} title="Invita persona" description="Crea un unico account Hotsflow e collegalo alla struttura." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="invite-form" disabled={saving || roles.length === 0}>{saving ? 'Invio…' : 'Invia invito'}</button></>}>
-    <form className="modal-form" id="invite-form" onSubmit={submit}>
+
+  if (created) {
+    return <Modal open={open} title="Profilo creato" description="Comunica queste credenziali alla persona: non verranno mostrate di nuovo." onClose={onClose} footer={<button className="btn btn-primary" type="button" onClick={onClose}>Chiudi</button>}>
+      <div className="modal-form">
+        <Field label="Identificativo di accesso"><input readOnly value={created.loginIdentifier} onFocus={(event) => event.currentTarget.select()} /></Field>
+        <Field label="Password"><input readOnly value={created.password} onFocus={(event) => event.currentTarget.select()} /></Field>
+      </div>
+    </Modal>
+  }
+
+  return <Modal open={open} title="Crea profilo" description="Crea un unico account Hotsflow e collegalo alla struttura." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="create-profile-form" disabled={saving || roles.length === 0}>{saving ? 'Creazione…' : mode === 'email' ? 'Invia invito' : 'Crea profilo'}</button></>}>
+    <div className="mode-toggle" role="tablist" aria-label="Modalità di creazione">
+      <button type="button" role="tab" aria-selected={mode === 'email'} className={mode === 'email' ? 'active' : ''} onClick={() => { setMode('email'); setError(null) }}>Invito email</button>
+      <button type="button" role="tab" aria-selected={mode === 'credentials'} className={mode === 'credentials' ? 'active' : ''} onClick={() => { setMode('credentials'); setError(null) }}>Credenziali</button>
+    </div>
+    <form className="modal-form" id="create-profile-form" onSubmit={submit}>
       <Field label="Nome e cognome"><input name="name" required minLength={2} maxLength={120} autoComplete="name" /></Field>
-      <Field label="Email"><input name="email" type="email" required autoComplete="email" /></Field>
-      <Field label="Accesso Hotsflow" htmlFor="invite-role"><Select id="invite-role" name="role" value={roleId} onChange={setRoleId}><option value="" disabled>Seleziona ruolo</option>{roles.map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</Select></Field>
-      <Field label="Mansione" htmlFor="invite-job"><Select id="invite-job" name="job" value={jobId} onChange={setJobId}><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</Select></Field>
+      {mode === 'email' ? (
+        <Field label="Email"><input name="email" type="email" required autoComplete="email" /></Field>
+      ) : (
+        <>
+          <Field label="Username"><input name="username" required minLength={3} maxLength={32} pattern="[a-z0-9][a-z0-9_-]{1,30}[a-z0-9]" title="Solo lettere minuscole, numeri, trattini e underscore" autoComplete="off" /></Field>
+          <Field label="Password"><PasswordField name="password" required minLength={8} maxLength={72} autoComplete="new-password" /></Field>
+          <Field label="Conferma password"><PasswordField name="passwordConfirm" required minLength={8} maxLength={72} autoComplete="new-password" /></Field>
+        </>
+      )}
+      <Field label="Accesso Hotsflow" htmlFor="create-role"><Select id="create-role" name="role" value={roleId} onChange={setRoleId}><option value="" disabled>Seleziona ruolo</option>{roles.map((role) => <option key={role.id} value={role.id}>{roleLabel(role.slug, role.displayName)}</option>)}</Select></Field>
+      <Field label="Mansione" htmlFor="create-job"><Select id="create-job" name="job" value={jobId} onChange={setJobId}><option value="">Da assegnare</option>{jobTitles.map((job) => <option key={job.id} value={job.id}>{job.name}</option>)}</Select></Field>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
     </form>
+  </Modal>
+}
+
+function ResetPasswordModal({ member, onClose }: { member: TeamMember | null; onClose: () => void }) {
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState<string | null>(null)
+  useEffect(() => { if (member) { setSaving(false); setError(null); setDone(null) } }, [member])
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (!member) return
+    const form = new FormData(event.currentTarget)
+    const password = String(form.get('password'))
+    const passwordConfirm = String(form.get('passwordConfirm'))
+    if (password !== passwordConfirm) { setError('Le due password non coincidono.'); return }
+    setSaving(true); setError(null)
+    try {
+      await core.resetTeamMemberPassword({ membershipId: member.membership.id, newPassword: password })
+      setDone(password)
+    } catch (cause) { setError(readableError(cause)); setSaving(false) }
+  }
+  if (done) {
+    return <Modal open={Boolean(member)} title="Pin reimpostato" description="Comunica la nuova password alla persona: non verrà mostrata di nuovo." onClose={onClose} footer={<button className="btn btn-primary" type="button" onClick={onClose}>Chiudi</button>}>
+      <div className="modal-form"><Field label="Nuova password"><input readOnly value={done} onFocus={(event) => event.currentTarget.select()} /></Field></div>
+    </Modal>
+  }
+  return <Modal open={Boolean(member)} title={member ? `Reimposta pin di ${member.profile.fullName}` : 'Reimposta pin'} description="Imposta una nuova password per l'accesso via credenziali." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="reset-password-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Reimposta'}</button></>}>
+    {member ? <form className="modal-form" id="reset-password-form" onSubmit={submit}>
+      <Field label="Nuova password"><PasswordField name="password" required minLength={8} maxLength={72} autoComplete="new-password" /></Field>
+      <Field label="Conferma nuova password"><PasswordField name="passwordConfirm" required minLength={8} maxLength={72} autoComplete="new-password" /></Field>
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+    </form> : null}
   </Modal>
 }
 
@@ -257,4 +336,4 @@ function SuggestedJobs({ existing, propertyId, onChanged }: { existing: JobTitle
 function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: ReactNode }) { return <label className="form-field" htmlFor={htmlFor}><span>{label}</span>{children}</label> }
 function initials(name: string) { return name.trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase() }
 function roleLabel(slug: string, fallback: string) { return ({ organization_admin: 'Admin organizzazione', property_admin: 'Admin struttura', manager: 'Manager', receptionist: 'Operatore' } as Record<string, string>)[slug] ?? fallback }
-function readableError(cause: unknown) { const message = cause instanceof Error ? cause.message : ''; if (/already|exists|409/i.test(message)) return 'Esiste già un account con questa email.'; if (/permission|forbidden|42501/i.test(message)) return 'Non hai i permessi necessari per questa operazione.'; return 'Operazione non riuscita. Riprova.' }
+function readableError(cause: unknown) { const message = cause instanceof Error ? cause.message : ''; if (/username/i.test(message)) return 'Username già in uso in questa struttura.'; if (/already|exists|409/i.test(message)) return 'Esiste già un account con questa email.'; if (/permission|forbidden|42501/i.test(message)) return 'Non hai i permessi necessari per questa operazione.'; return 'Operazione non riuscita. Riprova.' }
