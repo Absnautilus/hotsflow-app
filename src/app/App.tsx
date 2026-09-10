@@ -4,11 +4,16 @@ import { HomePage } from '../pages/HomePage'
 import { PlaceholderPage } from '../pages/PlaceholderPage'
 import { TeamPage } from '../pages/TeamPage'
 import { SettingsPage } from '../pages/SettingsPage'
+import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { HousekeepingModuleGate } from '../modules/housekeeping/HousekeepingModuleGate'
 
 export function App() {
   return (
     <Routes>
+      {/* Outside ShellLayout on purpose: this page handles its own transient
+          recovery session and must render before ModuleRuntimeContext's
+          signed-in/profile/property checks ever get a say. */}
+      <Route path="reimposta-password" element={<ResetPasswordPage />} />
       <Route element={<ShellLayout />}>
         <Route index element={<HomePage />} />
         <Route path="housekeeping/*" element={<HousekeepingModuleGate />} />
