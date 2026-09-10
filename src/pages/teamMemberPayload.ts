@@ -21,7 +21,12 @@ export function buildTeamMemberUpdateInput(
   const isSelf = member.profile.id === currentProfileId
   const orgWide = member.membership.propertyId == null
   if (!isSelf && !orgWide) {
-    input.roleId = requiredTextValue(form, 'role')
+    const roleId = requiredTextValue(form, 'role')
+    // Only send it when it actually changed: assign_membership_role requires
+    // the new role's rank to be strictly lower than the assigner's own, so
+    // resubmitting a same-rank member's unchanged role (a plain no-op) would
+    // otherwise be rejected as if it were a real reassignment attempt.
+    if (roleId !== member.role.id) input.roleId = roleId
   }
 
   return input
