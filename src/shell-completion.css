@@ -51,8 +51,9 @@
 .team-status-cell { display: flex; align-items: center; gap: 8px; }
 .row-action, .icon-button { width: 44px; height: 44px; border: 0; border-radius: 8px; display: grid; place-items: center; background: transparent; color: var(--muted); cursor: pointer; }
 .icon-button:hover { background: var(--surface-2); color: var(--accent); }
-.row-action:hover { color: var(--accent); }
-.row-action.danger:hover { color: var(--red-ink); }
+.row-action:hover:not(:disabled) { color: var(--accent); }
+.row-action.danger:hover:not(:disabled) { color: var(--red-ink); }
+.row-action:disabled { opacity: .35; cursor: not-allowed; }
 .team-empty { min-height: 130px; display: grid; place-items: center; align-content: center; gap: 8px; color: var(--muted); }
 .team-empty p { margin: 0; }
 .section-footnote { margin: 12px 20px 16px; color: var(--muted); font-size: 11px; }

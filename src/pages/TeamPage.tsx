@@ -135,17 +135,16 @@ export function TeamPage() {
                     {member.membership.username ? (
                       <button className="row-action" type="button" onClick={() => setResettingPassword(member)} aria-label={`Reimposta pin di ${member.profile.fullName}`}><KeyRound size={15} /></button>
                     ) : null}
-                    {!isSelf && !orgWide ? (
-                      <button
-                        className="row-action danger"
-                        type="button"
-                        onClick={() => onRemoveMember(member)}
-                        disabled={removingId === member.membership.id}
-                        aria-label={`Rimuovi ${member.profile.fullName}`}
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    ) : null}
+                    <button
+                      className="row-action danger"
+                      type="button"
+                      onClick={() => onRemoveMember(member)}
+                      disabled={isSelf || orgWide || removingId === member.membership.id}
+                      aria-label={`Rimuovi ${member.profile.fullName}`}
+                      title={isSelf ? 'Non puoi rimuovere te stesso' : orgWide ? 'Gli accessi organizzazione si gestiscono a livello di organizzazione' : undefined}
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </>
                 ) : null}
               </span>
