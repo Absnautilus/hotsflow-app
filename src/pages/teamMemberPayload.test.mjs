@@ -49,6 +49,19 @@ describe('buildTeamMemberUpdateInput', () => {
     })
   })
 
+  it('omits the role when resubmitted unchanged, even for another direct member', () => {
+    // assign_membership_role requires the new role's rank to be strictly
+    // lower than the assigner's own -- resubmitting a same-rank member's
+    // current role unchanged (e.g. saving after only editing job/status)
+    // must not be sent as a "reassignment", or the whole save is rejected.
+    assert.deepEqual(buildTeamMemberUpdateInput(member, 'property-1', 'admin-profile', values({
+      role: 'role-1', job: '', employmentStatus: 'active',
+    })), {
+      membershipId: 'membership-1', profileId: 'profile-1', propertyId: 'property-1',
+      jobTitleId: null, employmentStatus: 'active',
+    })
+  })
+
   it('never serializes missing controls as the strings null or undefined', () => {
     const payload = buildTeamMemberUpdateInput(member, 'property-1', 'profile-1', values({
       job: '', employmentStatus: 'active',
