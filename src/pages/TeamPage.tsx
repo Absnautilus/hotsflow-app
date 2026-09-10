@@ -56,7 +56,7 @@ export function TeamPage() {
     if (!ok) return
     setRemovingId(member.membership.id)
     try {
-      await core.removeTeamMember({ membershipId: member.membership.id })
+      await core.archiveTeamMember({ membershipId: member.membership.id })
       await loadTeam()
     } catch (cause) {
       setError(readableError(cause))
