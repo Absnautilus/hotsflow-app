@@ -129,14 +129,24 @@ function PropertyModal({ open, onClose, onSaved }: { open: boolean; onClose: () 
     const form = new FormData(event.currentTarget)
     setSaving(true); setError(null)
     try {
-      await core.updateProperty(runtime.property.id, { name: String(form.get('name')), timezone })
+      const checkInTime = String(form.get('checkInTime') ?? '').trim() || null
+      const checkOutTime = String(form.get('checkOutTime') ?? '').trim() || null
+      await core.updateProperty(runtime.property.id, {
+        name: String(form.get('name')),
+        timezone,
+        settings: { ...runtime.property.settings, checkInTime, checkOutTime },
+      })
       await onSaved()
     } catch { setError('Non è stato possibile aggiornare la struttura.'); setSaving(false) }
   }
+  const checkInDefault = typeof runtime.property?.settings.checkInTime === 'string' ? runtime.property.settings.checkInTime : ''
+  const checkOutDefault = typeof runtime.property?.settings.checkOutTime === 'string' ? runtime.property.settings.checkOutTime : ''
   return <Modal open={open} title="Informazioni struttura" description="Dati condivisi da tutti i moduli Hotsflow." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="property-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Salva'}</button></>}>
     <form className="modal-form" id="property-form" onSubmit={submit}>
       <label className="form-field"><span>Nome struttura</span><input name="name" required minLength={2} maxLength={120} defaultValue={runtime.property?.name} /></label>
       <label className="form-field" htmlFor="property-timezone"><span>Fuso orario</span><Select id="property-timezone" name="timezone" value={timezone} onChange={setTimezone}><option value="Europe/Rome">Europa — Roma</option><option value="Europe/London">Europa — Londra</option><option value="Europe/Amsterdam">Europa — Amsterdam</option><option value="America/Mexico_City">America — Città del Messico</option><option value="America/New_York">America — New York</option></Select></label>
+      <label className="form-field"><span>Orario check-in predefinito</span><input name="checkInTime" type="time" defaultValue={checkInDefault} /></label>
+      <label className="form-field"><span>Orario check-out predefinito</span><input name="checkOutTime" type="time" defaultValue={checkOutDefault} /></label>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
     </form>
   </Modal>

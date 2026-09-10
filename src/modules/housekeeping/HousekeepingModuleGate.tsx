@@ -1,6 +1,7 @@
 import { HousekeepingModule } from '@hotsflow/housekeeping-module'
 import '@hotsflow/housekeeping-module/style.css'
 import { supabase } from '../../core/client'
+import { useModuleRuntime } from '../../core/ModuleRuntimeContext'
 import { useHousekeepingAccess } from './useHousekeepingAccess'
 
 // Deep links (typed URL, refresh, or a saved bookmark) reach this gate
@@ -8,6 +9,7 @@ import { useHousekeepingAccess } from './useHousekeepingAccess'
 // hidden (see useHousekeepingAccess) -- so every non-"compatible" state must
 // explain itself rather than fall through to a blank or ambiguous screen.
 export function HousekeepingModuleGate() {
+  const runtime = useModuleRuntime()
   const access = useHousekeepingAccess()
 
   if (access.status === 'loading') {
@@ -40,6 +42,7 @@ export function HousekeepingModuleGate() {
     )
   }
 
+  const settings = runtime.property?.settings ?? {}
   return (
     <HousekeepingModule
       supabase={supabase}
@@ -49,6 +52,10 @@ export function HousekeepingModuleGate() {
         href: '/team',
         label: 'Apri Team',
         description: 'Gli account e gli accessi si gestiscono una sola volta in Hotsflow Team. Qui trovi il roster operativo di Housekeeping.',
+      }}
+      hotelSettings={{
+        checkInTime: typeof settings.checkInTime === 'string' ? settings.checkInTime : null,
+        checkOutTime: typeof settings.checkOutTime === 'string' ? settings.checkOutTime : null,
       }}
     />
   )
