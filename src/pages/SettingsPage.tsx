@@ -3,8 +3,9 @@ import { Bell, Building2, ChevronRight, Globe2, LockKeyhole, Puzzle, UserRound }
 import { Link } from 'react-router-dom'
 import { LanguageToggle } from '../components/LanguageToggle'
 import { Modal } from '../components/Modal'
+import { PasswordField } from '../components/PasswordField'
 import { Select } from '../components/Select'
-import { core } from '../core/client'
+import { core, supabase } from '../core/client'
 import { useModuleRuntime } from '../core/ModuleRuntimeContext'
 import { useHousekeepingAccess } from '../modules/housekeeping/useHousekeepingAccess'
 
@@ -16,6 +17,7 @@ export function SettingsPage() {
   const [language, setLanguage] = useState(() => localStorage.getItem('hotsflow.language') === 'en' ? 'en' : 'it')
   const [propertyOpen, setPropertyOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [securityOpen, setSecurityOpen] = useState(false)
   const [canManageProperty, setCanManageProperty] = useState(false)
 
   useEffect(() => { void runtime.hasPermission('core.property.manage').then(setCanManageProperty).catch(() => setCanManageProperty(false)) }, [runtime.hasPermission])
@@ -54,7 +56,7 @@ export function SettingsPage() {
             <LanguageToggle />
           </div>
           <SettingRow icon={<Bell size={17} />} title="Notifiche" detail="Preferenze globali" status="Non ancora disponibile" muted />
-          <SettingRow icon={<LockKeyhole size={17} />} title="Sicurezza" detail="Password e sessioni" status="Non ancora disponibile" muted />
+          <SettingRow icon={<LockKeyhole size={17} />} title="Sicurezza" detail="Cambia la password del tuo account" onClick={() => setSecurityOpen(true)} />
         </div>
       </section>
 
@@ -78,6 +80,7 @@ export function SettingsPage() {
 
       <PropertyModal open={propertyOpen} onClose={() => setPropertyOpen(false)} onSaved={async () => { setPropertyOpen(false); await runtime.refresh() }} />
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} onSaved={async () => { setProfileOpen(false); await runtime.refresh() }} />
+      <SecurityModal open={securityOpen} onClose={() => setSecurityOpen(false)} />
     </div>
   )
 }
@@ -156,6 +159,49 @@ function ProfileModal({ open, onClose, onSaved }: { open: boolean; onClose: () =
       <label className="form-field"><span>Nome e cognome</span><input name="name" required minLength={2} maxLength={120} defaultValue={runtime.profile?.fullName} autoComplete="name" /></label>
       <label className="form-field"><span>Email account</span><input value={runtime.session?.user.email ?? ''} readOnly /></label>
       <label className="form-field"><span>URL immagine profilo (facoltativo)</span><input name="avatar" type="url" defaultValue={runtime.profile?.avatarUrl ?? ''} /></label>
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+    </form>
+  </Modal>
+}
+
+function SecurityModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const runtime = useModuleRuntime()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState(false)
+  useEffect(() => { if (open) { setSaving(false); setError(null); setDone(false) } }, [open])
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const email = runtime.session?.user.email
+    if (!email) { setError('Sessione non valida. Ricarica la pagina.'); return }
+    const form = new FormData(event.currentTarget)
+    const currentPassword = String(form.get('current'))
+    const newPassword = String(form.get('next'))
+    const confirmPassword = String(form.get('confirm'))
+    if (newPassword !== confirmPassword) { setError('Le due password non coincidono.'); return }
+    setSaving(true); setError(null)
+    try {
+      // Re-check the current password before changing it -- updateUser only
+      // needs an active session, it wouldn't otherwise ask for it.
+      const { error: reauthError } = await supabase.auth.signInWithPassword({ email, password: currentPassword })
+      if (reauthError) { setError('Password attuale non corretta.'); setSaving(false); return }
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+      if (updateError) throw updateError
+      setDone(true)
+    } catch { setError('Non è stato possibile aggiornare la password.'); setSaving(false) }
+  }
+
+  if (done) {
+    return <Modal open={open} title="Password aggiornata" description="Usa la nuova password dal prossimo accesso." onClose={onClose} footer={<button className="btn btn-primary" type="button" onClick={onClose}>Chiudi</button>}>
+      <p>La password del tuo account è stata cambiata.</p>
+    </Modal>
+  }
+  return <Modal open={open} title="Cambia password" description="Serve la password attuale per confermare l'identità." onClose={onClose} footer={<><button className="btn btn-secondary" type="button" onClick={onClose}>Annulla</button><button className="btn btn-primary" type="submit" form="security-form" disabled={saving}>{saving ? 'Salvataggio…' : 'Aggiorna'}</button></>}>
+    <form className="modal-form" id="security-form" onSubmit={submit}>
+      <label className="form-field"><span>Password attuale</span><PasswordField name="current" required autoComplete="current-password" /></label>
+      <label className="form-field"><span>Nuova password</span><PasswordField name="next" required minLength={8} maxLength={72} autoComplete="new-password" /></label>
+      <label className="form-field"><span>Conferma nuova password</span><PasswordField name="confirm" required minLength={8} maxLength={72} autoComplete="new-password" /></label>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
     </form>
   </Modal>

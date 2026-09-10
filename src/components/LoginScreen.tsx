@@ -34,8 +34,8 @@ export function LoginScreen() {
         </div>
         <form className="login-form" onSubmit={handleSubmit}>
           <label>
-            <span>Email</span>
-            <input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required autoFocus />
+            <span>Email o identificativo</span>
+            <input type="text" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required autoFocus />
           </label>
           <label>
             <span>Password</span>
