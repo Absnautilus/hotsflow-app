@@ -29,8 +29,8 @@ export function TeamPage() {
   const [editing, setEditing] = useState<TeamMember | null>(null)
   const [resettingPassword, setResettingPassword] = useState<TeamMember | null>(null)
   const [jobEditor, setJobEditor] = useState<JobTitle | 'new' | null>(null)
-  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [removingId, setRemovingId] = useState<string | null>(null)
   const [confirmDialog, confirm] = useConfirm()
 
   async function onToggleAccess(member: TeamMember) {
@@ -50,11 +50,19 @@ export function TeamPage() {
   async function onRemoveMember(member: TeamMember) {
     const ok = await confirm({
       title: `Rimuovere ${member.profile.fullName}?`,
-      description: 'La persona verrà tolta da questo elenco.',
+      description: 'La persona verrà rimossa dal team di questa struttura.',
       confirmLabel: 'Rimuovi',
     })
     if (!ok) return
-    setRemovedIds((current) => new Set(current).add(member.profile.id))
+    setRemovingId(member.membership.id)
+    try {
+      await core.removeTeamMember({ membershipId: member.membership.id })
+      await loadTeam()
+    } catch (cause) {
+      setError(readableError(cause))
+    } finally {
+      setRemovingId(null)
+    }
   }
 
   const loadTeam = useCallback(async () => {
@@ -75,7 +83,6 @@ export function TeamPage() {
   const currentMember = team.members.find((member) => member.profile.id === runtime.profile?.id)
   const assignableRoles = team.roles.filter((role) => role.rank < (currentMember?.role.rank ?? 0))
   const propertyName = property?.name ?? 'Struttura'
-  const visibleMembers = team.members.filter((member) => !removedIds.has(member.profile.id))
 
   return (
     <div className="page-stack shell-page team-page">
@@ -94,7 +101,7 @@ export function TeamPage() {
       <section className="shell-card">
         <div className="section-heading split">
           <div><h2>Persone</h2><p>Il team collegato a {propertyName}.</p></div>
-          <span className="status-chip">{loading ? 'Caricamento…' : `${visibleMembers.length} ${visibleMembers.length === 1 ? 'profilo' : 'profili'}`}</span>
+          <span className="status-chip">{loading ? 'Caricamento…' : `${team.members.length} ${team.members.length === 1 ? 'profilo' : 'profili'}`}</span>
         </div>
         <div className="team-table" role="table" aria-label="Team">
           <div className="team-row team-row-head" role="row">
@@ -104,7 +111,7 @@ export function TeamPage() {
             <span role="columnheader">Stato</span>
             <span role="columnheader" aria-hidden="true" />
           </div>
-          {!loading && visibleMembers.map((member) => {
+          {!loading && team.members.map((member) => {
             const isSelf = member.profile.id === runtime.profile?.id
             const orgWide = member.membership.propertyId == null
             return (
@@ -128,7 +135,17 @@ export function TeamPage() {
                     {member.membership.username ? (
                       <button className="row-action" type="button" onClick={() => setResettingPassword(member)} aria-label={`Reimposta pin di ${member.profile.fullName}`}><KeyRound size={15} /></button>
                     ) : null}
-                    <button className="row-action danger" type="button" onClick={() => onRemoveMember(member)} aria-label={`Rimuovi ${member.profile.fullName}`}><Trash2 size={15} /></button>
+                    {!isSelf && !orgWide ? (
+                      <button
+                        className="row-action danger"
+                        type="button"
+                        onClick={() => onRemoveMember(member)}
+                        disabled={removingId === member.membership.id}
+                        aria-label={`Rimuovi ${member.profile.fullName}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    ) : null}
                   </>
                 ) : null}
               </span>
